@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "software": {
+        "python": ""
+    },
+    "game": {
+        "force": false,
+        "folder": "",
+        "version": "2.2.0.2"
+    },
+    "packaging": {
+        "bundle_guiflash": false
+    },
+    "info": {
+        "id": "caphhh.currentAccAndAimTime",
+        "name": "Current Accuracy & Aim Time",
+        "description": "Shows live dispersion and remaining aim time near the crosshair.",
+        "version": "1.0.0",
+        "package_name": "Caphhh.currentAccAndAimTime.wotmod",
+        "archive_name": "Caphhh.currentAccAndAimTime.zip"
+    }
+}
