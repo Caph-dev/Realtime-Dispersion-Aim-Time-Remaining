@@ -1,0 +1,19 @@
+{
+    "color": [
+        255,
+        255,
+        255,
+        255
+    ],
+    "debug_aim_logging": false,
+    "decimal_aim_time": 1,
+    "decimal_dispersion": 3,
+    "enabled": true,
+    "font_name": "default_medium.font",
+    "font_size": 28.0,
+    "line_spacing": 0.02,
+    "offset_x": 0.05,
+    "offset_y": 0.05,
+    "show_aim_time": true,
+    "show_dispersion": true
+}

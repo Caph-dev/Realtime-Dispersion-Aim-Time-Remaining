@@ -1,0 +1,14 @@
+# Build output
+build/
+temp/
+*.pyc
+__pycache__/
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local tooling (Python 2.7 bundle, vendor API sources with nested .git)
+tools/
