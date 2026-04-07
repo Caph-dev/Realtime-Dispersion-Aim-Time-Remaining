@@ -4,9 +4,9 @@
 
 ## Description / 简介
 
-**English:** A World of Tanks client mod that draws two lines near the crosshair: **current gun dispersion** (accuracy) and **remaining aim time** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional) and **ModsListAPI** (optional), and stores settings in JSON under `mods/configs/currentAccAndAimTime/config.json`. The packaged file is **`Caphhh.currentAccAndAimTime.wotmod`**.
+**English:** A World of Tanks client mod that draws two lines near the crosshair: **current gun dispersion** (accuracy) and **remaining aim time** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional) and **ModsListAPI** (optional), and stores settings in JSON under `mods/configs/currentAccAndAimTime/config.json`. The built package is **`Caphhh.currentAccAndAimTime-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`Caphhh.currentAccAndAimTime-1.0.0.wotmod`**), committed under **`release/`**.
 
-**中文：** 本模组在准星附近显示两行文字：**当前火炮散布（精度）**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI** 与 **ModsListAPI**，配置保存在 `mods/configs/currentAccAndAimTime/config.json`。发布包文件名为 **`Caphhh.currentAccAndAimTime.wotmod`**。
+**中文：** 本模组在准星附近显示两行文字：**当前火炮散布（精度）**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI** 与 **ModsListAPI**，配置保存在 `mods/configs/currentAccAndAimTime/config.json`。构建产物为 **`Caphhh.currentAccAndAimTime-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`Caphhh.currentAccAndAimTime-1.0.0.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
 
 ---
 
@@ -14,9 +14,9 @@
 
 ### Install / 安装
 
-1. Copy **`Caphhh.currentAccAndAimTime.wotmod`** into your game folder:  
+1. Copy **`release/Caphhh.currentAccAndAimTime-1.0.0.wotmod`** (or the matching **`Caphhh.currentAccAndAimTime-<version>.wotmod`** from **`release/`**) into your game folder:  
    `WorldOfTanks/mods/<game_version>/`  
-   （将 **`Caphhh.currentAccAndAimTime.wotmod`** 复制到游戏目录下的 `mods/<游戏版本号>/`。）
+   （将 **`release/`** 下的 **`Caphhh.currentAccAndAimTime-<版本>.wotmod`** 复制到游戏目录下的 `mods/<游戏版本号>/`。）
 
 2. On first run, the mod creates **`mods/configs/currentAccAndAimTime/config.json`** next to the game executable if it does not exist. You can also ship the default from this repo:  
    `resources/out/mods/configs/currentAccAndAimTime/config.json`  
@@ -40,10 +40,10 @@ cd "d:\GAME\Current Accuracy and Aim Time"
 python build.py --distribute
 ```
 
-Outputs:
+Outputs (mod version suffix comes from `build.json` → `info.version`):
 
-- `build/Caphhh.currentAccAndAimTime.wotmod`
-- `build/Caphhh.currentAccAndAimTime.zip` (includes `resources/out` tree for default config layout)
+- `release/Caphhh.currentAccAndAimTime-1.0.0.wotmod`
+- `release/Caphhh.currentAccAndAimTime-1.0.0.zip` when using `--distribute` (includes `resources/out` tree for default config layout)
 
 Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` into a configured game folder.
 
@@ -78,7 +78,8 @@ If you previously used **`mods/configs/caphhh.current_acc_and_aim_time/config.js
 
 - `python/gui/mods/mod_caphhh_current_acc_and_aim_time.py` — main mod (hooks, UI, settings)
 - `resources/out/mods/configs/currentAccAndAimTime/config.json` — default config shipped with `--distribute`
-- `build.py` / `build.json` — compile `.pyc` and pack `.wotmod`
+- `build.py` / `build.json` — compile `.pyc` and pack **`release/Caphhh.currentAccAndAimTime-<version>.wotmod`**
+- `release/` — versioned `.wotmod` (and `.zip` when using `--distribute`); tracked in Git for releases
 
 ## License / 许可证
 

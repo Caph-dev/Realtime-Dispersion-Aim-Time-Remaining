@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
-# Simplified build script for packaging Caphhh.currentAccAndAimTime.wotmod.
+# Simplified build script for packaging the mod as <base>-<mod_version>.wotmod.
 import argparse
 import json
 import os
@@ -131,6 +131,24 @@ def write_file(path, data, mode):
         handle.close()
 
 
+def versioned_artifact_names(info):
+    """Return (wotmod_filename, zip_filename) using info.version before .wotmod / .zip."""
+    mod_version = info.get('version', '0.0.0')
+    package_name = info.get('package_name', 'Mod.wotmod')
+    if not package_name.lower().endswith('.wotmod'):
+        package_name = package_name + '.wotmod'
+    stem = package_name[: -len('.wotmod')]
+    wotmod_file = '%s-%s.wotmod' % (stem, mod_version)
+
+    archive_name = info.get('archive_name', stem + '.zip')
+    if archive_name.lower().endswith('.zip'):
+        arch_stem = archive_name[: -len('.zip')]
+    else:
+        arch_stem = archive_name
+    zip_file = '%s-%s.zip' % (arch_stem, mod_version)
+    return wotmod_file, zip_file
+
+
 def cleanup_python_artifacts(source_dir):
     for root, dirs, files in os.walk(source_dir):
         for name in files:
@@ -155,15 +173,15 @@ def main():
     info = config['info']
 
     temp_dir = 'temp'
-    build_dir = 'build'
+    release_dir = 'release'
     python_dir = 'python'
-    output_package = os.path.join(build_dir, info['package_name'])
-    output_archive = os.path.join(build_dir, info['archive_name'])
+    wotmod_name, zip_name = versioned_artifact_names(info)
+    output_package = os.path.join(release_dir, wotmod_name)
+    output_archive = os.path.join(release_dir, zip_name)
 
     remove_path(temp_dir)
-    remove_path(build_dir)
     ensure_dir(temp_dir)
-    ensure_dir(build_dir)
+    ensure_dir(release_dir)
 
     compile_python_sources(python_executable, python_dir)
 
@@ -180,7 +198,7 @@ def main():
         dist_root = os.path.join(temp_dir, 'distribute')
         dist_mods = os.path.join(dist_root, 'mods', game_version)
         ensure_dir(dist_mods)
-        shutil.copy2(output_package, os.path.join(dist_mods, info['package_name']))
+        shutil.copy2(output_package, os.path.join(dist_mods, wotmod_name))
 
         if os.path.isdir(os.path.join('resources', 'out')):
             copytree(os.path.join('resources', 'out'), dist_root)
@@ -194,7 +212,7 @@ def main():
 
         target_mods_dir = os.path.join(game_folder, 'mods', game_version)
         ensure_dir(target_mods_dir)
-        shutil.copy2(output_package, os.path.join(target_mods_dir, info['package_name']))
+        shutil.copy2(output_package, os.path.join(target_mods_dir, wotmod_name))
 
         if os.path.isdir(os.path.join('resources', 'out')):
             copytree(os.path.join('resources', 'out'), game_folder)
