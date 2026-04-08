@@ -6,14 +6,23 @@
         255
     ],
     "debug_aim_logging": false,
+    "debug_drag_logging": false,
     "decimal_aim_time": 1,
     "decimal_dispersion": 3,
+    "display_update_interval": 0.166667,
     "enabled": true,
     "font_name": "default_medium.font",
     "font_size": 28.0,
     "line_spacing": 0.02,
     "offset_x": 0.05,
+    "offset_x_arcade": 0.05,
+    "offset_x_sniper": 0.05,
     "offset_y": 0.05,
+    "offset_y_arcade": 0.05,
+    "offset_y_sniper": 0.05,
     "show_aim_time": true,
-    "show_dispersion": true
+    "show_dispersion": true,
+    "text_alpha": 1.0,
+    "text_color_hex": "FFFFFF",
+    "text_shadow": true
 }

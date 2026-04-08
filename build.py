@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 # Simplified build script for packaging the mod as <base>-<mod_version>.wotmod.
+#
+# Bytecode builds must use Python 2.7 (same line as the WoT client). Set
+# build.json software.python or WOT_PYTHON27, or use --source to ship .py only.
 import argparse
 import json
 import os
@@ -72,9 +75,66 @@ def zip_folder(source, destination):
         archive.close()
 
 
+def _python_version_major_minor(python_executable):
+    out = subprocess.check_output(
+        [python_executable, '-c', 'import sys; print("%d.%d" % sys.version_info[:2])'],
+        stderr=subprocess.STDOUT,
+    )
+    if isinstance(out, bytes):
+        out = out.decode('ascii', 'ignore')
+    parts = out.strip().split('.')
+    return int(parts[0]), int(parts[1])
+
+
+def assert_python27(python_executable):
+    major, minor = _python_version_major_minor(python_executable)
+    if major != 2 or minor != 7:
+        raise ValueError(
+            'WoT mod bytecode must be built with Python 2.7 (got %d.%d from %s).' % (
+                major, minor, python_executable,
+            )
+        )
+
+
+def resolve_python27_executable(config):
+    """Return path to a Python 2.7 interpreter, or None."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = []
+    py = (config.get('software') or {}).get('python')
+    if py:
+        py = py.strip()
+        if py:
+            if not os.path.isabs(py):
+                py = os.path.normpath(os.path.join(here, py))
+            candidates.append(py)
+    env = os.environ.get('WOT_PYTHON27')
+    if env:
+        candidates.append(env.strip())
+    if os.name == 'nt':
+        candidates.append(r'C:\Python27\python.exe')
+    candidates.append(os.path.join(here, 'tools', 'python27', 'python.exe'))
+
+    seen = set()
+    for exe in candidates:
+        if not exe or exe in seen:
+            continue
+        seen.add(exe)
+        exe = os.path.normpath(exe)
+        if not os.path.isfile(exe):
+            continue
+        try:
+            assert_python27(exe)
+            return exe
+        except Exception:
+            continue
+    return None
+
+
 def compile_python_sources(python_executable, root_dir):
     if not python_executable:
         raise ValueError('Python 2.7 executable is not configured in build.json or WOT_PYTHON27.')
+
+    assert_python27(python_executable)
 
     for root, _dirs, files in os.walk(root_dir):
         for name in files:
@@ -111,6 +171,19 @@ def copy_python_bytecode(source_dir, destination_dir):
             target_path = os.path.join(destination_dir, relative_pyc)
             ensure_dir(os.path.dirname(target_path))
             shutil.copy2(compiled_path, target_path)
+
+
+def copy_python_sources(source_dir, destination_dir):
+    """Ship .py files so the game uses its own Python version (bytecode from a mismatched py_compile breaks loading)."""
+    for root, _dirs, files in os.walk(source_dir):
+        for name in files:
+            if not name.endswith('.py'):
+                continue
+            source_path = os.path.join(root, name)
+            relative_path = os.path.relpath(source_path, source_dir)
+            target_path = os.path.join(destination_dir, relative_path)
+            ensure_dir(os.path.dirname(target_path))
+            shutil.copy2(source_path, target_path)
 
 
 def build_meta_xml(info):
@@ -160,16 +233,26 @@ def cleanup_python_artifacts(source_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Build the Caphhh.currentAccAndAimTime WoT mod.')
+    parser = argparse.ArgumentParser(description='Build the caphhh.RealtimeDispersion&AimTimeRemaining WoT mod.')
     parser.add_argument('--ingame', action='store_true', help='Copy build output into the configured WoT folder.')
     parser.add_argument('--distribute', action='store_true', help='Create a distributable zip alongside the .wotmod file.')
+    parser.add_argument(
+        '--bytecode',
+        action='store_true',
+        help='Force .pyc compile with Python 2.7 (overrides ship_python_source).',
+    )
+    parser.add_argument(
+        '--source',
+        action='store_true',
+        help='Ship .py source only (no Python 2.7 needed for the build machine).',
+    )
     args = parser.parse_args()
 
     config = read_json('build.json')
-    python_executable = config['software'].get('python') or os.environ.get('WOT_PYTHON27')
     game_folder = config['game'].get('folder') or os.environ.get('WOT_FOLDER')
     game_version = config['game'].get('version') or os.environ.get('WOT_VERSION')
     bundle_guiflash = config.get('packaging', {}).get('bundle_guiflash', False)
+    ship_python_source = config.get('packaging', {}).get('ship_python_source', False)
     info = config['info']
 
     temp_dir = 'temp'
@@ -183,12 +266,25 @@ def main():
     ensure_dir(temp_dir)
     ensure_dir(release_dir)
 
-    compile_python_sources(python_executable, python_dir)
-
     if bundle_guiflash and os.path.isdir(os.path.join('resources', 'in')):
         copytree(os.path.join('resources', 'in'), os.path.join(temp_dir, 'res'))
 
-    copy_python_bytecode(python_dir, os.path.join(temp_dir, 'res', 'scripts', 'client'))
+    if args.source:
+        use_bytecode = False
+    else:
+        use_bytecode = args.bytecode or not ship_python_source
+    scripts_client = os.path.join(temp_dir, 'res', 'scripts', 'client')
+    if use_bytecode:
+        python_executable = resolve_python27_executable(config)
+        if not python_executable:
+            raise ValueError(
+                'Python 2.7 not found for bytecode build. Install Python 2.7, set build.json software.python '
+                'or WOT_PYTHON27 to its python.exe, or run: python build.py --source'
+            )
+        compile_python_sources(python_executable, python_dir)
+        copy_python_bytecode(python_dir, scripts_client)
+    else:
+        copy_python_sources(python_dir, scripts_client)
     write_file(os.path.join(temp_dir, 'meta.xml'), build_meta_xml(info), 'wb')
 
     zip_folder(temp_dir, output_package)
@@ -219,7 +315,8 @@ def main():
 
         print('Copied build output to %s' % target_mods_dir)
 
-    cleanup_python_artifacts(python_dir)
+    if use_bytecode:
+        cleanup_python_artifacts(python_dir)
     remove_path(temp_dir)
 
 
