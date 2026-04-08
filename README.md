@@ -1,12 +1,12 @@
-# Current Accuracy & Aim Time
+# Realtime Dispersion & Aim Time Remaining
 
 **Repository:** [github.com/Walaxy/WOT-Current-Accuracy-Aim-Time](https://github.com/Walaxy/WOT-Current-Accuracy-Aim-Time)
 
 ## Description / 简介
 
-**English:** A World of Tanks client mod that draws two lines near the crosshair: **current gun dispersion** (accuracy) and **remaining aim time** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional) and **ModsListAPI** (optional), and stores settings in JSON under `mods/configs/currentAccAndAimTime/config.json`. The built package is **`Caphhh.currentAccAndAimTime-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`Caphhh.currentAccAndAimTime-1.0.0.wotmod`**), committed under **`release/`**.
+**English:** A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional) and **ModsListAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`**), committed under **`release/`**.
 
-**中文：** 本模组在准星附近显示两行文字：**当前火炮散布（精度）**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI** 与 **ModsListAPI**，配置保存在 `mods/configs/currentAccAndAimTime/config.json`。构建产物为 **`Caphhh.currentAccAndAimTime-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`Caphhh.currentAccAndAimTime-1.0.0.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
+**中文：** 本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI** 与 **ModsListAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
 
 ---
 
@@ -14,12 +14,12 @@
 
 ### Install / 安装
 
-1. Copy **`release/Caphhh.currentAccAndAimTime-1.0.0.wotmod`** (or the matching **`Caphhh.currentAccAndAimTime-<version>.wotmod`** from **`release/`**) into your game folder:  
+1. Copy **`release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`** (or the matching **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** from **`release/`**) into your game folder:  
    `WorldOfTanks/mods/<game_version>/`  
-   （将 **`release/`** 下的 **`Caphhh.currentAccAndAimTime-<版本>.wotmod`** 复制到游戏目录下的 `mods/<游戏版本号>/`。）
+   （将 **`release/`** 下的 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本>.wotmod`** 复制到游戏目录下的 `mods/<游戏版本号>/`。）
 
-2. On first run, the mod creates **`mods/configs/currentAccAndAimTime/config.json`** next to the game executable if it does not exist. You can also ship the default from this repo:  
-   `resources/out/mods/configs/currentAccAndAimTime/config.json`  
+2. On first run, the mod creates **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`** next to the game executable if it does not exist. You can also ship the default from this repo:  
+   `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`  
    （首次运行会自动生成配置；也可手动放置仓库中的默认 `config.json`。）
 
 3. If you use **ModSettingsAPI**, open the mod settings panel in-game to change options; changes are written back to the same JSON file.  
@@ -42,8 +42,8 @@ python build.py --distribute
 
 Outputs (mod version suffix comes from `build.json` → `info.version`):
 
-- `release/Caphhh.currentAccAndAimTime-1.0.0.wotmod`
-- `release/Caphhh.currentAccAndAimTime-1.0.0.zip` when using `--distribute` (includes `resources/out` tree for default config layout)
+- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`
+- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.zip` when using `--distribute` (includes `resources/out` tree for default config layout)
 
 Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` into a configured game folder.
 
@@ -51,7 +51,7 @@ Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` int
 
 ## Configuration / 配置说明
 
-File path: **`mods/configs/currentAccAndAimTime/config.json`**
+File path: **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**
 
 | Key | Type | Description (EN) | 说明（中文） |
 |-----|------|------------------|--------------|
@@ -70,15 +70,28 @@ File path: **`mods/configs/currentAccAndAimTime/config.json`**
 
 ### Migrating from older paths / 旧路径迁移
 
-If you previously used **`mods/configs/caphhh.current_acc_and_aim_time/config.json`**, copy that file to **`mods/configs/currentAccAndAimTime/config.json`** and add **`"debug_aim_logging": false`** if missing.
+If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **`mods/configs/caphhh.current_acc_and_aim_time/config.json`**, copy that file to **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`** and add missing new keys if needed.
+
+## Changelog / 更新记录
+
+### 1.1.0
+
+- Rename mod display name to **Realtime Dispersion & Aim Time Remaining**.
+- Add HUD drag support during battle with **Ctrl + Left Mouse**.
+- Add visual options: text color, alpha, and shadow toggle.
+- Fix Gambiter default halo issue by clearing default label shadow filter.
+- Improve drag reliability across clients with normalized-cursor handling and fallback start path.
+- Fix drag Y-axis direction and drag speed matching (text now follows mouse movement precisely).
+- Add independent HUD offsets for **Arcade** and **Sniper** modes.
+- Add optional **`debug_drag_logging`** (`[DRAG_DEBUG]`) for troubleshooting in `python.log`.
 
 ---
 
 ## Project layout / 工程结构
 
 - `python/gui/mods/mod_caphhh_current_acc_and_aim_time.py` — main mod (hooks, UI, settings)
-- `resources/out/mods/configs/currentAccAndAimTime/config.json` — default config shipped with `--distribute`
-- `build.py` / `build.json` — compile `.pyc` and pack **`release/Caphhh.currentAccAndAimTime-<version>.wotmod`**
+- `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json` — default config shipped with `--distribute`
+- `build.py` / `build.json` — compile `.pyc` and pack **`release/caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`**
 - `release/` — versioned `.wotmod` (and `.zip` when using `--distribute`); tracked in Git for releases
 
 ## License / 许可证

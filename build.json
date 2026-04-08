@@ -1,7 +1,7 @@
 {
     "version": 1,
     "software": {
-        "python": ""
+        "python": "tools/python27/python.exe"
     },
     "game": {
         "force": false,
@@ -9,14 +9,15 @@
         "version": "2.2.0.2"
     },
     "packaging": {
-        "bundle_guiflash": false
+        "bundle_guiflash": false,
+        "ship_python_source": false
     },
     "info": {
-        "id": "caphhh.currentAccAndAimTime",
-        "name": "Current Accuracy & Aim Time",
-        "description": "Shows live dispersion and remaining aim time near the crosshair.",
-        "version": "1.0.0",
-        "package_name": "Caphhh.currentAccAndAimTime.wotmod",
-        "archive_name": "Caphhh.currentAccAndAimTime.zip"
+        "id": "caphhh.realtimeDispersionAimTimeRemaining",
+        "name": "Realtime Dispersion & Aim Time Remaining",
+        "description": "Shows realtime dispersion and aim time remaining near the crosshair.",
+        "version": "1.1.0",
+        "package_name": "caphhh.RealtimeDispersion&AimTimeRemaining.wotmod",
+        "archive_name": "caphhh.RealtimeDispersion&AimTimeRemaining.zip"
     }
 }
