@@ -1,5 +1,6 @@
 # Create or update a GitHub Release using the distribute zip (requires: gh auth login).
-# Reads version from build.json. Uploads release/<archive_stem>-<version>.zip (two .wotmod files only).
+# Reads version from build.json. Uploads ONLY release/<archive_stem>-<version>.zip (zip contains two .wotmods).
+# Policy: GitHub Release must not include a standalone .wotmod — any .wotmod assets are removed after upload.
 # Usage: .\scripts\publish-github-release.ps1 [-Tag v1.2.3] [-Notes "markdown..."]
 
 param(
@@ -16,6 +17,20 @@ $RepoRoot = Split-Path $PSScriptRoot
 Set-Location $RepoRoot
 
 $Repo = "Walaxy/WOT-Realtime-Dispersion-Aim-Time-Remaining"
+
+function Remove-StandaloneWotmodReleaseAssets {
+    param([string]$TagName, [string]$RepoName)
+    $viewJson = & gh release view $TagName --repo $RepoName --json assets 2>&1
+    if ($LASTEXITCODE -ne 0) { return }
+    $view = $viewJson | ConvertFrom-Json
+    foreach ($asset in $view.assets) {
+        $name = $asset.name
+        if ($name -match '\.wotmod$') {
+            Write-Host "Policy: removing standalone .wotmod asset: $name"
+            & gh release delete-asset $TagName $name --repo $RepoName --yes 2>&1 | Out-Null
+        }
+    }
+}
 
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     Write-Error "GitHub CLI (gh) not found. Install from https://cli.github.com/"
@@ -55,6 +70,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "Release $Tag exists; uploading release zip (--clobber)..."
     & gh release upload $Tag --repo $Repo --clobber $ReleaseZip
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    Remove-StandaloneWotmodReleaseAssets -TagName $Tag -RepoName $Repo
     Write-Host "Done: https://github.com/$Repo/releases/tag/$Tag"
     exit 0
 }
@@ -62,4 +78,5 @@ if ($LASTEXITCODE -eq 0) {
 Write-Host "Creating release $Tag..."
 & gh release create $Tag --repo $Repo --title $Title --notes $Notes $ReleaseZip
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+Remove-StandaloneWotmodReleaseAssets -TagName $Tag -RepoName $Repo
 Write-Host "Done: https://github.com/$Repo/releases/tag/$Tag"
