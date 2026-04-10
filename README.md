@@ -43,8 +43,7 @@ python build.py --distribute
 Outputs (mod version suffix comes from `build.json` → `info.version`):
 
 - `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`
-- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.zip` when using `--distribute` (includes `resources/out` tree for default config layout)
-- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2-GitHub-Release.zip` when using `--distribute`: a **flat zip** containing that version’s `.wotmod` plus **`release/caphhh.modssettingsapi_1.7.0.wotmod`** (for in-game Mod Settings). Use this file as the **GitHub Release** attachment.
+- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.zip` when using `--distribute`: **only two** `.wotmod` files — **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** and **`caphhh.modssettingsapi_<version>.wotmod`** (ModSettingsAPI; default version **`1.7.0`** via `packaging.modssettingsapi_version` in **`build.json`**). This is the **published release** zip for GitHub. Optional: set **`packaging.distribute_resources_zip`** to `true` to also build **`*-<version>-resources.zip`** (mods folder + `resources/out` layout).
 
 Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` into a configured game folder.
 
@@ -99,9 +98,9 @@ If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **
 ## Project layout / 工程结构
 
 - `python/gui/mods/mod_caphhh_current_acc_and_aim_time.py` — main mod (hooks, UI, settings)
-- `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json` — default config shipped with `--distribute`
+- `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json` — default config (copy manually or use **`packaging.distribute_resources_zip`**)
 - `build.py` / `build.json` — compile `.pyc` and pack **`release/caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`**
-- `release/` — versioned `.wotmod`, distribute zip, and **`*-GitHub-Release.zip`** (this mod + `caphhh.modssettingsapi_1.7.0.wotmod`); tracked in Git for releases
+- `release/` — versioned `.wotmod` and **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.zip`** (this mod + `caphhh.modssettingsapi_<version>.wotmod`); tracked in Git for releases
 
 ## License / 许可证
 

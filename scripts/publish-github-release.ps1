@@ -1,5 +1,5 @@
-# Create or update a GitHub Release using the bundled GitHub-Release zip (requires: gh auth login).
-# Reads version and package stem from build.json. Uploads only *-GitHub-Release.zip.
+# Create or update a GitHub Release using the distribute zip (requires: gh auth login).
+# Reads version from build.json. Uploads release/<archive_stem>-<version>.zip (two .wotmod files only).
 # Usage: .\scripts\publish-github-release.ps1 [-Tag v1.2.3] [-Notes "markdown..."]
 
 param(
@@ -29,15 +29,17 @@ if ($LASTEXITCODE -ne 0) {
 
 $cfg = Get-Content (Join-Path $RepoRoot "build.json") -Raw -Encoding UTF8 | ConvertFrom-Json
 $ver = $cfg.info.version
-$pkg = $cfg.info.package_name
-if (-not $pkg.EndsWith(".wotmod")) { $pkg = $pkg + ".wotmod" }
-$stem = $pkg.Substring(0, $pkg.Length - ".wotmod".Length)
+$archiveName = $cfg.info.archive_name
+if (-not $archiveName.ToLower().EndsWith(".zip")) {
+    $archiveName = $archiveName + ".zip"
+}
+$archStem = $archiveName.Substring(0, $archiveName.Length - ".zip".Length)
 
 if (-not $Tag) {
     $Tag = "v$ver"
 }
 
-$ReleaseZip = Join-Path $RepoRoot (Join-Path "release" ("{0}-{1}-GitHub-Release.zip" -f $stem, $ver))
+$ReleaseZip = Join-Path $RepoRoot (Join-Path "release" ("{0}-{1}.zip" -f $archStem, $ver))
 if (-not (Test-Path $ReleaseZip)) {
     Write-Error "Missing $ReleaseZip — run: python build.py --distribute"
 }
@@ -50,7 +52,7 @@ $Title = "$ver – Realtime Dispersion & Aim Time Remaining (with ModSettingsAPI
 
 $view = & gh release view $Tag --repo $Repo 2>&1
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "Release $Tag exists; uploading GitHub-Release zip (--clobber)..."
+    Write-Host "Release $Tag exists; uploading release zip (--clobber)..."
     & gh release upload $Tag --repo $Repo --clobber $ReleaseZip
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     Write-Host "Done: https://github.com/$Repo/releases/tag/$Tag"

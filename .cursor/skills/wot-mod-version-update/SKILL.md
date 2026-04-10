@@ -59,15 +59,15 @@ The build script derives **final on-disk names** from **`build.json` → `info`*
 
 **Distribute zip (`--distribute`)**
 
-- **`info.archive_name`** must end with **`.zip`**. Take the stem (without `.zip`), then: **`release/<stem>-<info.version>.zip`** (e.g. `Caphhh.currentAccAndAimTime-1.0.0.zip`).
+- **`info.archive_name`** must end with **`.zip`**. Take the stem (without `.zip`), then: **`release/<stem>-<info.version>.zip`** (e.g. `caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.zip`).
 
-**GitHub Release zip (`--distribute`, after the main `.wotmod` is built)**
+- That zip is the **published release archive**: **exactly two** `.wotmod` files — **`caphhh.RealtimeDispersion&AimTimeRemaining-<info.version>.wotmod`** (same as the built mod) and **`caphhh.modssettingsapi_<apiVersion>.wotmod`**, where **`apiVersion`** defaults to **`1.7.0`** (`packaging.modssettingsapi_version` in **`build.json`**). Source file on disk: **`release/caphhh.modssettingsapi_<apiVersion>.wotmod`**, unless overridden by **`packaging.github_release_bundle_wotmod`**. Toggle the two-file bundle with **`packaging.github_release_bundle`**.
 
-- The build also writes **`release/<package_stem>-<info.version>-GitHub-Release.zip`**: a **flat** archive containing the versioned **`.wotmod`** plus **`release/caphhh.modssettingsapi_1.7.0.wotmod`** (ModSettingsAPI). **Attach this file to GitHub Releases** (not only the raw mod `.wotmod`). Toggle via **`packaging.github_release_bundle`** / path via **`packaging.github_release_bundle_wotmod`** in **`build.json`**.
+- Optional: **`packaging.distribute_resources_zip`** → **`release/<package_stem>-<info.version>-resources.zip`** (mods folder + `resources/out`), separate from the release zip.
 
 **Git / GitHub**
 
-- **`release/`** holds the versioned **`.wotmod`**, the **distribute `.zip`**, and the **`-GitHub-Release.zip`** when using **`--distribute`**, and is **tracked** so releases ship with the repo. After bumping **`info.version`**, rebuild, then commit the new files under **`release/`**.
+- **`release/`** holds the versioned **`.wotmod`** and the **`<stem>-<info.version>.zip`** (two mods only) when using **`--distribute`**, and is **tracked** so releases ship with the repo. After bumping **`info.version`**, rebuild, then commit the new files under **`release/`**.
 
 **`--ingame`**
 
