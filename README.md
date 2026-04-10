@@ -4,9 +4,9 @@
 
 ## Description / 简介
 
-**English:** A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional) and **ModsListAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`**), committed under **`release/`**.
+**English:** A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional) and **ModsListAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**), committed under **`release/`**.
 
-**中文：** 本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI** 与 **ModsListAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
+**中文：** 本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI** 与 **ModsListAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
 
 ---
 
@@ -14,7 +14,7 @@
 
 ### Install / 安装
 
-1. Copy **`release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`** (or the matching **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** from **`release/`**) into your game folder:  
+1. Copy **`release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`** (or the matching **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** from **`release/`**) into your game folder:  
    `WorldOfTanks/mods/<game_version>/`  
    （将 **`release/`** 下的 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本>.wotmod`** 复制到游戏目录下的 `mods/<游戏版本号>/`。）
 
@@ -29,7 +29,7 @@
 
 1. Install a **Python 2.7** interpreter compatible with the WoT client (same major version as the game’s embedded Python).
 
-2. Point the build to that interpreter via **`build.json` → `software.python`** (full path to `python.exe`), or set environment variable **`WOT_PYTHON27`**. The default `build.json` leaves `software.python` empty so clones work on any machine.
+2. Point the build to that interpreter via **`build.json` → `software.python`** (full path to `python.exe`), or set environment variable **`WOT_PYTHON27`**. This repo currently defaults to `tools/python27/python.exe`; change it if your Python 2.7 lives elsewhere.
 
 3. Optional: set **`build.json` → `game.version`** (and `game.folder` for `--ingame`) or **`WOT_VERSION`** / **`WOT_FOLDER`**.
 
@@ -42,8 +42,8 @@ python build.py --distribute
 
 Outputs (mod version suffix comes from `build.json` → `info.version`):
 
-- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.wotmod`
-- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.0.zip` when using `--distribute` (includes `resources/out` tree for default config layout)
+- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`
+- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.zip` when using `--distribute` (includes `resources/out` tree for default config layout)
 
 Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` into a configured game folder.
 
@@ -52,6 +52,8 @@ Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` int
 ## Configuration / 配置说明
 
 File path: **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**
+
+Fresh installs start centered on screen (`0.0`, `0.0`). Position is adjusted by dragging the HUD in battle and saved to this file; ModSettings no longer exposes position controls.
 
 | Key | Type | Description (EN) | 说明（中文） |
 |-----|------|------------------|--------------|
@@ -73,6 +75,12 @@ File path: **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**
 If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **`mods/configs/caphhh.current_acc_and_aim_time/config.json`**, copy that file to **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`** and add missing new keys if needed.
 
 ## Changelog / 更新记录
+
+### 1.1.2
+
+- Fix HUD position not persisting after battle/game exit when old ModSettings data exists.
+- Set the default HUD position for fresh installs to the screen center.
+- Remove position options from ModSettings; HUD position is now drag-only.
 
 ### 1.1.0
 
