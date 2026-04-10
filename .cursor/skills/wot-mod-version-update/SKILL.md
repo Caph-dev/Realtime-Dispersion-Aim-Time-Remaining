@@ -3,9 +3,11 @@ name: wot-mod-version-update
 description: >-
   Maintains World of Tanks Python mods after a client patch. Covers comparing
   decompiled sources from izeberg/wot-src, updating hooks and private attribute
-  indices, and diagnosing issues via python.log with optional [AIM_DEBUG] traces.
-  Use when the game version changes, dispersion or targeting APIs break, or
-  when the user asks how to debug WoT mod breakage after an update.
+  indices, diagnosing issues via python.log with optional [AIM_DEBUG] traces, and
+  versioned release artifact naming (release/<base>-<mod_version>.wotmod from
+  build.json). Use when the game version changes, dispersion or targeting APIs
+  break, when shipping a new mod version, or when the user asks how to debug WoT
+  mod breakage after an update.
 ---
 
 # WoT mod maintenance after a game version update
@@ -37,9 +39,39 @@ description: >-
 
 1. Set **`build.json` → `game.version`** to the new folder name under `WorldOfTanks/mods/<version>/`.
 
-2. Run `python build.py` (add `--distribute` or `--ingame` as needed).
+2. Run `python build.py` (add `--distribute` or `--ingame` as needed). **Bytecode** in `release/*.wotmod` must be produced with **Python 2.7** (set `build.json` → `software.python` or `WOT_PYTHON27` to the game-matching `python.exe`). To ship **`.py` source** instead (no local Python 2.7), use `python build.py --source` or set `packaging.ship_python_source` to `true` in `build.json`.
 
 3. Ensure the packaged **`meta.xml`** `id` matches **`MOD_ID`** in the mod and that config paths match the shipped **`resources/out`** tree.
+
+### Artifact filename rules (this project)
+
+The build script derives **final on-disk names** from **`build.json` → `info`**. The **mod’s own version** is **`info.version`** (e.g. `1.0.0`). It is **not** the WoT client folder version in `game.version`.
+
+| Role | `build.json` field | How it is used |
+|------|---------------------|----------------|
+| Base name for `.wotmod` | **`info.package_name`** | Must end with **`.wotmod`**. Take the **stem** (path without `.wotmod`). |
+| Mod version suffix | **`info.version`** | Appended to the stem, before **`.wotmod`**. |
+| Output path | — | **`release/<stem>-<info.version>.wotmod`** |
+
+**Examples**
+
+- `package_name`: `Caphhh.currentAccAndAimTime.wotmod`, `version`: `1.0.0` → **`release/Caphhh.currentAccAndAimTime-1.0.0.wotmod`**.
+
+**Distribute zip (`--distribute`)**
+
+- **`info.archive_name`** must end with **`.zip`**. Take the stem (without `.zip`), then: **`release/<stem>-<info.version>.zip`** (e.g. `Caphhh.currentAccAndAimTime-1.0.0.zip`).
+
+**GitHub Release zip (`--distribute`, after the main `.wotmod` is built)**
+
+- The build also writes **`release/<package_stem>-<info.version>-GitHub-Release.zip`**: a **flat** archive containing the versioned **`.wotmod`** plus **`release/caphhh.modssettingsapi_1.7.0.wotmod`** (ModSettingsAPI). **Attach this file to GitHub Releases** (not only the raw mod `.wotmod`). Toggle via **`packaging.github_release_bundle`** / path via **`packaging.github_release_bundle_wotmod`** in **`build.json`**.
+
+**Git / GitHub**
+
+- **`release/`** holds the versioned **`.wotmod`**, the **distribute `.zip`**, and the **`-GitHub-Release.zip`** when using **`--distribute`**, and is **tracked** so releases ship with the repo. After bumping **`info.version`**, rebuild, then commit the new files under **`release/`**.
+
+**`--ingame`**
+
+- The same **versioned filename** is copied into **`WorldOfTanks/mods/<game.version>/`**. WoT loads any **`*.wotmod`** filename; the version suffix is for humans and release hygiene only.
 
 ## 3. Debug with `python.log`
 
@@ -71,7 +103,8 @@ description: >-
 - [ ] No new tracebacks in `python.log` during a smoke test.
 - [ ] In-game overlay values look sane (stationary/moving, different tanks).
 - [ ] Default config under **`resources/out`** documents any new keys (if added).
-- [ ] **`README.md`** or **`build.json`** version strings updated if you ship a release.
+- [ ] **`info.version`** in **`build.json`** matches the release you intend; **`README.md`** updated if user-facing version text changed.
+- [ ] Rebuilt artifacts are present under **`release/`** with versioned names per **Artifact filename rules** above (and matching **`.zip`** if using **`--distribute`**), and committed when publishing to GitHub.
 
 ## 5. Notes
 
