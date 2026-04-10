@@ -16,7 +16,7 @@
         "id": "caphhh.realtimeDispersionAimTimeRemaining",
         "name": "Realtime Dispersion & Aim Time Remaining",
         "description": "Shows realtime dispersion and aim time remaining near the crosshair.",
-        "version": "1.1.0",
+        "version": "1.1.2",
         "package_name": "caphhh.RealtimeDispersion&AimTimeRemaining.wotmod",
         "archive_name": "caphhh.RealtimeDispersion&AimTimeRemaining.zip"
     }

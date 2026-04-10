@@ -315,7 +315,7 @@ def _drag_debug_log(message, force=False):
 
 MOD_ID = 'caphhh.realtimeDispersionAimTimeRemaining'
 MOD_NAME = 'Realtime Dispersion & Aim Time Remaining'
-MOD_VERSION = '1.1.0'
+MOD_VERSION = '1.1.2'
 CONFIG_FOLDER_NAME = 'RealtimeDispersion&AimTimeRemaining'
 CONFIG_RELATIVE_PATH = os.path.join('mods', 'configs', CONFIG_FOLDER_NAME, 'config.json')
 LEGACY_CONFIG_RELATIVE_PATHS = (
@@ -329,7 +329,7 @@ DEFAULT_FONT_CHOICES = (
 )
 
 # Seconds between HUD text updates; 0 = no throttle (every getOwnVehicleShotDispersionAngle call).
-DEFAULT_DISPLAY_UPDATE_INTERVAL = 1.0 / 6.0
+DEFAULT_DISPLAY_UPDATE_INTERVAL = 0.033
 
 DEFAULT_SETTINGS = {
     'enabled': True,
@@ -337,24 +337,33 @@ DEFAULT_SETTINGS = {
     'show_aim_time': True,
     'debug_aim_logging': False,
     'debug_drag_logging': False,
-    'font_size': 28.0,
+    'font_size': 24.0,
     'font_name': DEFAULT_FONT_CHOICES[1],
     'decimal_dispersion': 3,
-    'decimal_aim_time': 1,
-    'offset_x': 0.05,
-    'offset_y': 0.05,
-    'offset_x_arcade': 0.05,
-    'offset_y_arcade': 0.05,
-    'offset_x_sniper': 0.05,
-    'offset_y_sniper': 0.05,
+    'decimal_aim_time': 2,
+    'offset_x': 0.0,
+    'offset_y': 0.0,
+    'offset_x_arcade': 0.0,
+    'offset_y_arcade': 0.0,
+    'offset_x_sniper': 0.0,
+    'offset_y_sniper': 0.0,
     'line_spacing': 0.02,
     'display_update_interval': DEFAULT_DISPLAY_UPDATE_INTERVAL,
-    'color': [255, 255, 255, 255],
+    'color': [235, 248, 255, 255],
     # Mirrors DistanceMarker-style ModsSettingsAPI: ColorChoice + alpha slider + shadow checkbox.
-    'text_color_hex': 'FFFFFF',
+    'text_color_hex': 'EBF8FF',
     'text_alpha': 1.0,
-    'text_shadow': True,
+    'text_shadow': False,
+    'text_shadow_alpha': 0.45,
 }
+POSITION_SETTING_KEYS = (
+    'offset_x',
+    'offset_y',
+    'offset_x_arcade',
+    'offset_y_arcade',
+    'offset_x_sniper',
+    'offset_y_sniper',
+)
 
 
 def _build_float_range(start, stop, step):
@@ -512,6 +521,7 @@ def sanitize_settings(raw_settings):
     else:
         data['text_alpha'] = _clamp(_to_float(data.get('text_alpha'), DEFAULT_SETTINGS['text_alpha']), 0.0, 1.0)
     data['text_shadow'] = _to_bool(data.get('text_shadow'), DEFAULT_SETTINGS['text_shadow'])
+    data['text_shadow_alpha'] = _clamp(_to_float(data.get('text_shadow_alpha'), DEFAULT_SETTINGS['text_shadow_alpha']), 0.0, 1.0)
     try:
         data['color'][3] = int(round(data['text_alpha'] * 255.0))
     except Exception:
@@ -530,6 +540,15 @@ def sanitize_settings(raw_settings):
     data['offset_y'] = data['offset_y_arcade']
 
     return data
+
+
+def _without_position_settings(raw_settings):
+    if not isinstance(raw_settings, dict):
+        return {}
+    filtered = copy.deepcopy(raw_settings)
+    for key in POSITION_SETTING_KEYS:
+        filtered.pop(key, None)
+    return filtered
 
 
 def _get_ctrl_mode_name():
@@ -683,7 +702,7 @@ class CrosshairTextRenderer(object):
             text,
         )
 
-    def _guiflash_base_props(self, html, x_position, y_position):
+    def _guiflash_base_props(self, html, x_position, y_position, alpha_override=None, z_index=None):
         # Gambiter LabelEx applies a default DropShadowFilter on the TextField (gray, blurred),
         # which reads as a colored halo around white text. Passing shadow=None clears filters.
         props = {
@@ -695,8 +714,14 @@ class CrosshairTextRenderer(object):
             'visible': True,
             'shadow': None,
         }
+        if z_index is not None:
+            props['index'] = int(z_index)
         try:
-            props['alpha'] = _clamp(_to_float(SETTINGS.get('text_alpha', 1.0), 1.0), 0.0, 1.0)
+            if alpha_override is None:
+                alpha = _clamp(_to_float(SETTINGS.get('text_alpha', 1.0), 1.0), 0.0, 1.0)
+            else:
+                alpha = _clamp(_to_float(alpha_override, 1.0), 0.0, 1.0)
+            props['alpha'] = alpha
         except Exception:
             pass
         return props
@@ -749,19 +774,31 @@ class CrosshairTextRenderer(object):
         x_position, y_position = self._pixel_position_for_line(line_index)
         shadow_dx = 2
         shadow_dy = 2
+        base_index = 300 + (line_index * 10)
 
         if SETTINGS.get('text_shadow', True):
             shadow_alias = alias + '_shadow'
+            shadow_alpha = _clamp(
+                _to_float(SETTINGS.get('text_alpha', 1.0), 1.0) * _to_float(SETTINGS.get('text_shadow_alpha', 0.45), 0.45),
+                0.0, 1.0
+            )
             shadow_props = self._guiflash_base_props(
                 self._make_html_shadow_layer(text),
                 x_position + shadow_dx,
                 y_position + shadow_dy,
+                alpha_override=shadow_alpha,
+                z_index=base_index,
             )
             self._put_guiflash_component(shadow_alias, shadow_props)
         else:
             self._delete_guiflash_one(alias + '_shadow')
 
-        main_props = self._guiflash_base_props(self._make_html_text(text), x_position, y_position)
+        main_props = self._guiflash_base_props(
+            self._make_html_text(text),
+            x_position,
+            y_position,
+            z_index=base_index + 1,
+        )
         self._put_guiflash_component(alias, main_props)
 
     def _delete_guiflash_label(self, alias):
@@ -1598,10 +1635,6 @@ def build_settings_template():
     controls.append(make_option_dropdown('Font (game font preset)', 'font_name', SETTINGS['font_name']))
     controls.append(make_option_dropdown('Dispersion decimals (digits after dot)', 'decimal_dispersion', SETTINGS['decimal_dispersion']))
     controls.append(make_option_dropdown('Aim time decimals (digits after dot)', 'decimal_aim_time', SETTINGS['decimal_aim_time']))
-    controls.append(make_option_dropdown('Arcade horizontal offset (non-sniper)', 'offset_x_arcade', SETTINGS.get('offset_x_arcade', SETTINGS['offset_x'])))
-    controls.append(make_option_dropdown('Arcade vertical offset (non-sniper)', 'offset_y_arcade', SETTINGS.get('offset_y_arcade', SETTINGS['offset_y'])))
-    controls.append(make_option_dropdown('Sniper horizontal offset (scope view)', 'offset_x_sniper', SETTINGS.get('offset_x_sniper', SETTINGS['offset_x'])))
-    controls.append(make_option_dropdown('Sniper vertical offset (scope view)', 'offset_y_sniper', SETTINGS.get('offset_y_sniper', SETTINGS['offset_y'])))
     controls.append(make_option_dropdown('Line spacing (gap between the 2 lines)', 'line_spacing', SETTINGS['line_spacing']))
     controls.append(make_option_dropdown(
         'HUD update interval (seconds; 0 = every frame)',
@@ -1628,6 +1661,15 @@ def build_settings_template():
         'text_shadow',
         SETTINGS.get('text_shadow', DEFAULT_SETTINGS['text_shadow']),
         tooltip='When enabled, draws a dark offset copy behind the text (gambiter HUD only).',
+    ))
+    controls.append(make_mods_slider_dict(
+        'Text shadow alpha',
+        'text_shadow_alpha',
+        SETTINGS.get('text_shadow_alpha', DEFAULT_SETTINGS['text_shadow_alpha']),
+        0.0,
+        1.0,
+        0.01,
+        tooltip='Shadow opacity multiplier (0 = no visible shadow, 1 = strongest).',
     ))
 
     filtered_controls = [control for control in controls if control is not None]
@@ -1676,6 +1718,11 @@ def normalize_settings_payload(raw_settings):
             normalized['text_alpha'] = float(normalized['text_alpha'])
         except Exception:
             del normalized['text_alpha']
+    if 'text_shadow_alpha' in normalized:
+        try:
+            normalized['text_shadow_alpha'] = float(normalized['text_shadow_alpha'])
+        except Exception:
+            del normalized['text_shadow_alpha']
     if 'text_shadow' in normalized:
         normalized['text_shadow'] = _to_bool(normalized['text_shadow'], DEFAULT_SETTINGS['text_shadow'])
     return normalized
@@ -1687,7 +1734,7 @@ def on_settings_changed(linkage, new_settings):
         return
 
     patched_settings = copy.deepcopy(SETTINGS)
-    patched_settings.update(normalize_settings_payload(new_settings))
+    patched_settings.update(_without_position_settings(normalize_settings_payload(new_settings)))
     SETTINGS = sanitize_settings(patched_settings)
     save_config()
     apply_runtime_settings()
@@ -1706,7 +1753,9 @@ def register_mod_settings():
         saved_settings = None
 
     if saved_settings:
-        SETTINGS = sanitize_settings(normalize_settings_payload(saved_settings))
+        patched_settings = copy.deepcopy(SETTINGS)
+        patched_settings.update(_without_position_settings(normalize_settings_payload(saved_settings)))
+        SETTINGS = sanitize_settings(patched_settings)
         save_config()
         apply_runtime_settings()
         try:
@@ -1719,7 +1768,9 @@ def register_mod_settings():
     try:
         api_settings = g_modsSettingsApi.setModTemplate(MOD_ID, SETTINGS_TEMPLATE, on_settings_changed)
         if api_settings:
-            SETTINGS = sanitize_settings(normalize_settings_payload(api_settings))
+            patched_settings = copy.deepcopy(SETTINGS)
+            patched_settings.update(_without_position_settings(normalize_settings_payload(api_settings)))
+            SETTINGS = sanitize_settings(patched_settings)
             save_config()
             apply_runtime_settings()
         log('ModSettingsAPI template registered.')
