@@ -2,11 +2,13 @@
 
 **Repository:** [github.com/Walaxy/WOT-Current-Accuracy-Aim-Time](https://github.com/Walaxy/WOT-Current-Accuracy-Aim-Time)
 
+**WGMODS LINK:** [wgmods.net/7612/](https://wgmods.net/7612/)
+
 ## Description / 简介
 
-**English:** A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional) and **ModsListAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**), committed under **`release/`**.
+**English:** A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**), committed under **`release/`**.
 
-**中文：** 本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI** 与 **ModsListAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
+**中文：** 本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
 
 ---
 
@@ -67,9 +69,6 @@ Fresh installs start centered on screen (`0.0`, `0.0`). Position is adjusted by 
 | `font_name` | string | One of: `default_small.font`, `default_medium.font`, `default_large.font`. | 字体预设，三选一。 |
 | `decimal_dispersion` | int | Decimal places for dispersion (0–6). | 散布数值小数位数（0–6）。 |
 | `decimal_aim_time` | int | Decimal places for aim time (0–4). | 缩圈时间小数位数（0–4）。 |
-| `offset_x` | float | Horizontal offset of the text block (normalized, negative = left). | 文字块水平偏移（归一化，负值为左移）。 |
-| `offset_y` | float | Vertical offset (negative = down). | 垂直偏移（负值为下移）。 |
-| `line_spacing` | float | Extra gap between the two lines. | 两行之间的额外间距。 |
 | `color` | `[R,G,B,A]` | Text color, each channel 0–255. | 文字颜色，RGBA 各 0–255。 |
 
 ### Migrating from older paths / 旧路径迁移
