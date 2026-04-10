@@ -47,6 +47,8 @@ Outputs (mod version suffix comes from `build.json` → `info.version`):
 
 Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` into a configured game folder.
 
+**GitHub Releases:** publish **only** the distribute **`.zip`** (via **`scripts/publish-github-release.ps1`**), not a separate `.wotmod` download.
+
 ---
 
 ## Configuration / 配置说明

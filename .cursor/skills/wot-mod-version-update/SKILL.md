@@ -69,6 +69,8 @@ The build script derives **final on-disk names** from **`build.json` → `info`*
 
 - **`release/`** holds the versioned **`.wotmod`** and the **`<stem>-<info.version>.zip`** (two mods only) when using **`--distribute`**, and is **tracked** so releases ship with the repo. After bumping **`info.version`**, rebuild, then commit the new files under **`release/`**.
 
+- **GitHub Releases:** attach **only** the **`<stem>-<info.version>.zip`** file. Do **not** upload a standalone `.wotmod` as a release asset. Use **`scripts/publish-github-release.ps1`** (it uploads the zip and strips stray `.wotmod` attachments).
+
 **`--ingame`**
 
 - The same **versioned filename** is copied into **`WorldOfTanks/mods/<game.version>/`**. WoT loads any **`*.wotmod`** filename; the version suffix is for humans and release hygiene only.
