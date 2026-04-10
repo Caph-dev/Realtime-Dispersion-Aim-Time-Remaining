@@ -48,17 +48,21 @@ def copytree(source, destination):
             shutil.copy2(os.path.join(root, name), os.path.join(target_root, name))
 
 
-def zip_github_release_bundle(main_wotmod_path, extra_wotmod_paths, destination_zip):
+def zip_distribute_bundle(main_wotmod_path, modsettings_wotmod_path, destination_zip, modsettings_arcname):
     """
-    Flat zip of .wotmod files (basename entries) for GitHub Releases: main mod + bundled deps.
+    Flat zip with exactly two .wotmod entries for release:
+    <stem>-<modVersion>.wotmod and caphhh.modssettingsapi_<apiVersion>.wotmod
     """
     archive = zipfile.ZipFile(destination_zip, 'w', zipfile.ZIP_STORED)
     try:
-        for path in [main_wotmod_path] + list(extra_wotmod_paths):
+        entries = (
+            (main_wotmod_path, os.path.basename(main_wotmod_path)),
+            (modsettings_wotmod_path, modsettings_arcname),
+        )
+        for path, arcname in entries:
             if not os.path.isfile(path):
-                raise IOError('GitHub release bundle missing file: %s' % path)
-            arcname = os.path.basename(path)
-            info = zipfile.ZipInfo(arcname)
+                raise IOError('Release bundle missing file: %s' % path)
+            info = zipfile.ZipInfo(arcname.replace('\\', '/'))
             info.external_attr = 33206 << 16
             source_handle = open(path, 'rb')
             try:
@@ -240,8 +244,7 @@ def versioned_artifact_names(info):
     else:
         arch_stem = archive_name
     zip_file = '%s-%s.zip' % (arch_stem, mod_version)
-    github_release_zip = '%s-%s-GitHub-Release.zip' % (stem, mod_version)
-    return wotmod_file, zip_file, github_release_zip
+    return wotmod_file, zip_file
 
 
 def cleanup_python_artifacts(source_dir):
@@ -281,10 +284,9 @@ def main():
     release_dir = 'release'
     python_dir = 'python'
     repo_root = os.path.dirname(os.path.abspath(__file__))
-    wotmod_name, zip_name, github_release_name = versioned_artifact_names(info)
+    wotmod_name, zip_name = versioned_artifact_names(info)
     output_package = os.path.join(release_dir, wotmod_name)
     output_archive = os.path.join(release_dir, zip_name)
-    output_github_release = os.path.join(release_dir, github_release_name)
 
     remove_path(temp_dir)
     ensure_dir(temp_dir)
@@ -315,28 +317,40 @@ def main():
     print('Built %s' % output_package)
 
     if args.distribute:
-        dist_root = os.path.join(temp_dir, 'distribute')
-        dist_mods = os.path.join(dist_root, 'mods', game_version)
-        ensure_dir(dist_mods)
-        shutil.copy2(output_package, os.path.join(dist_mods, wotmod_name))
-
-        if os.path.isdir(os.path.join('resources', 'out')):
-            copytree(os.path.join('resources', 'out'), dist_root)
-
-        zip_folder(dist_root, output_archive)
-        print('Built %s' % output_archive)
-
         packaging = config.get('packaging') or {}
+        if packaging.get('distribute_resources_zip', False):
+            dist_root = os.path.join(temp_dir, 'distribute')
+            dist_mods = os.path.join(dist_root, 'mods', game_version)
+            ensure_dir(dist_mods)
+            shutil.copy2(output_package, os.path.join(dist_mods, wotmod_name))
+            if os.path.isdir(os.path.join('resources', 'out')):
+                copytree(os.path.join('resources', 'out'), dist_root)
+            mod_version = info.get('version', '0.0.0')
+            package_name = info.get('package_name', 'Mod.wotmod')
+            if not package_name.lower().endswith('.wotmod'):
+                package_name = package_name + '.wotmod'
+            stem = package_name[: -len('.wotmod')]
+            resources_zip = os.path.join(release_dir, '%s-%s-resources.zip' % (stem, mod_version))
+            zip_folder(dist_root, resources_zip)
+            print('Built %s' % resources_zip)
+
         if packaging.get('github_release_bundle', True):
-            bundle_rel = packaging.get(
-                'github_release_bundle_wotmod',
-                os.path.join('release', 'caphhh.modssettingsapi_1.7.0.wotmod'),
+            modsettings_ver = str(packaging.get('modssettingsapi_version', '1.7.0'))
+            modsettings_arc = 'caphhh.modssettingsapi_%s.wotmod' % modsettings_ver
+            bundle_rel = packaging.get('github_release_bundle_wotmod')
+            if bundle_rel:
+                bundle_path = bundle_rel
+                if not os.path.isabs(bundle_path):
+                    bundle_path = os.path.normpath(os.path.join(repo_root, bundle_path))
+            else:
+                bundle_path = os.path.join(repo_root, 'release', modsettings_arc)
+            zip_distribute_bundle(
+                output_package,
+                bundle_path,
+                output_archive,
+                modsettings_arcname=modsettings_arc,
             )
-            bundle_path = bundle_rel
-            if not os.path.isabs(bundle_path):
-                bundle_path = os.path.normpath(os.path.join(repo_root, bundle_path))
-            zip_github_release_bundle(output_package, [bundle_path], output_github_release)
-            print('Built %s' % output_github_release)
+            print('Built %s' % output_archive)
 
     if args.ingame:
         if not game_folder or not game_version:
