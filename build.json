@@ -10,7 +10,9 @@
     },
     "packaging": {
         "bundle_guiflash": false,
-        "ship_python_source": false
+        "ship_python_source": false,
+        "github_release_bundle": true,
+        "github_release_bundle_wotmod": "release/caphhh.modssettingsapi_1.7.0.wotmod"
     },
     "info": {
         "id": "caphhh.realtimeDispersionAimTimeRemaining",
