@@ -12,3 +12,4 @@ desktop.ini
 
 # Local tooling (Python 2.7 bundle, vendor API sources with nested .git)
 tools/
+.cursor/skills/wot-mod-version-update/SKILL.md
