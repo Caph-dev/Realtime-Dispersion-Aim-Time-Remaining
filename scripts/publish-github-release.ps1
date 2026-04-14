@@ -1,5 +1,5 @@
 # Create or update a GitHub Release using the distribute zip (requires: gh auth login).
-# Reads version from build.json. Uploads ONLY release/<archive_stem>-<version>.zip (zip contains two .wotmods).
+# Reads version from build.json. Uploads ONLY release/<archive_stem>-<version>.zip (zip contains four .wotmods).
 # Policy: GitHub Release must not include a standalone .wotmod — any .wotmod assets are removed after upload.
 # Usage: .\scripts\publish-github-release.ps1 [-Tag v1.2.3] [-Notes "markdown..."]
 
@@ -60,10 +60,10 @@ if (-not (Test-Path $ReleaseZip)) {
 }
 
 if (-not $Notes) {
-    $Notes = "Release **$ver**. Install: copy both `.wotmod` files from the zip into `WorldOfTanks/mods/<game_version>/`."
+    $Notes = "Release **$ver**. Install: copy all four `.wotmod` files from the zip into `WorldOfTanks/mods/<game_version>/` (this mod + ModsSettingsAPI + Mods List + Gameface)."
 }
 
-$Title = "$ver – Realtime Dispersion & Aim Time Remaining (with ModSettingsAPI zip)"
+$Title = "$ver – Realtime Dispersion & Aim Time Remaining (full stack zip: 4× .wotmod)"
 
 $view = & gh release view $Tag --repo $Repo 2>&1
 if ($LASTEXITCODE -eq 0) {
