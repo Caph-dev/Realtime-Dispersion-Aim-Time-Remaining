@@ -59,15 +59,15 @@ The build script derives **final on-disk names** from **`build.json` → `info`*
 
 **Distribute zip (`--distribute`)**
 
-- **`info.archive_name`** must end with **`.zip`**. Take the stem (without `.zip`), then: **`release/<stem>-<info.version>.zip`** (e.g. `caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.zip`).
+- **`info.archive_name`** must end with **`.zip`**. Take the stem (without `.zip`), then: **`release/<stem>-<info.version>.zip`** (e.g. `RealtimeDispersion&AimTimeRemaining-1.1.2.zip`).
 
-- That zip is the **published release archive**: **exactly two** `.wotmod` files — **`caphhh.RealtimeDispersion&AimTimeRemaining-<info.version>.wotmod`** (same as the built mod) and **`caphhh.modssettingsapi_<apiVersion>.wotmod`**, where **`apiVersion`** defaults to **`1.7.0`** (`packaging.modssettingsapi_version` in **`build.json`**). Source file on disk: **`release/caphhh.modssettingsapi_<apiVersion>.wotmod`**, unless overridden by **`packaging.github_release_bundle_wotmod`**. Toggle the two-file bundle with **`packaging.github_release_bundle`**.
+- That zip is the **published release archive**: **four** `.wotmod` files — **`caphhh.RealtimeDispersion&AimTimeRemaining-<info.version>.wotmod`** (same as the built mod) plus three vendor files listed in **`packaging.distribute_bundle_extra_wotmods`** (paths relative to repo root, typically **`izeberg.modssettingsapi_1.7.0.wotmod`**, **`me.poliroid.modslistapi_1.7.8.wotmod`**, **`net.openwg.gameface_1.1.5.wotmod`** under **`release/`**). Vendor files must exist before **`python build.py --distribute`**. Toggle with **`packaging.github_release_bundle`**.
 
 - Optional: **`packaging.distribute_resources_zip`** → **`release/<package_stem>-<info.version>-resources.zip`** (mods folder + `resources/out`), separate from the release zip.
 
 **Git / GitHub**
 
-- **`release/`** holds the versioned **`.wotmod`** and the **`<stem>-<info.version>.zip`** (two mods only) when using **`--distribute`**, and is **tracked** so releases ship with the repo. After bumping **`info.version`**, rebuild, then commit the new files under **`release/`**.
+- **`release/`** holds the main **`.wotmod`**, vendor **`.wotmod`** files, and the **`<stem>-<info.version>.zip`** (zip contains four **`.wotmod`** entries) when using **`--distribute`**, and is **tracked** so releases ship with the repo. After bumping **`info.version`**, rebuild, then commit the new files under **`release/`**.
 
 - **GitHub Releases:** attach **only** the **`<stem>-<info.version>.zip`** file. Do **not** upload a standalone `.wotmod` as a release asset. Use **`scripts/publish-github-release.ps1`** (it uploads the zip and strips stray `.wotmod` attachments).
 

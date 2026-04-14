@@ -24,8 +24,8 @@
    `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`  
    （首次运行会自动生成配置；也可手动放置仓库中的默认 `config.json`。）
 
-3. If you use **ModSettingsAPI**, open the mod settings panel in-game to change options; changes are written back to the same JSON file.  
-   （若安装了 **ModSettingsAPI**，可在游戏内模组设置中修改选项，会写回同一 JSON。）
+3. For **ModSettingsAPI** (optional but recommended): copy **all four** `.wotmod` files from **`release/RealtimeDispersion&AimTimeRemaining-<version>.zip`** (or the loose copies in **`release/`**) into `WorldOfTanks/mods/<game_version>/` — this mod, **ModsSettingsAPI** (`izeberg`), **Mods List** (`me.poliroid.modslistapi`), and **Gameface** (`net.openwg`). Then open the mod settings panel in-game; changes are written back to the same JSON file.  
+   （若使用 **ModSettingsAPI**：将 zip 内或 **`release/`** 目录中的 **四个** `.wotmod` 全部拷贝到 `mods/<游戏版本>/`，再在游戏内打开模组设置；选项会写回同一 JSON。）
 
 ### Build from source / 从源码构建
 
@@ -45,7 +45,9 @@ python build.py --distribute
 Outputs (mod version suffix comes from `build.json` → `info.version`):
 
 - `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`
-- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.zip` when using `--distribute`: **only two** `.wotmod` files — **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** and **`caphhh.modssettingsapi_<version>.wotmod`** (ModSettingsAPI; default version **`1.7.0`** via `packaging.modssettingsapi_version` in **`build.json`**). This is the **published release** zip for GitHub. Optional: set **`packaging.distribute_resources_zip`** to `true` to also build **`*-<version>-resources.zip`** (mods folder + `resources/out` layout).
+- `release/RealtimeDispersion&AimTimeRemaining-1.1.2.zip` when using `--distribute`: a flat zip with **four** `.wotmod` files — this mod, **`izeberg.modssettingsapi_1.7.0.wotmod`**, **`me.poliroid.modslistapi_1.7.8.wotmod`**, **`net.openwg.gameface_1.1.5.wotmod`** (paths listed in **`packaging.distribute_bundle_extra_wotmods`** in **`build.json`**). Vendor files must already sit under **`release/`** before building. This is the **published release** zip for GitHub. Optional: set **`packaging.distribute_resources_zip`** to `true` to also build **`*-<version>-resources.zip`** (mods folder + `resources/out` layout).
+
+**Tracked under `release/`:** five artifacts — the four `.wotmod` files above plus the **`.zip`** (the zip contains the same four `.wotmod` entries; keep loose copies for direct installs without unpacking).
 
 Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` into a configured game folder.
 
@@ -101,19 +103,19 @@ If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **
 - `python/gui/mods/mod_caphhh_current_acc_and_aim_time.py` — main mod (hooks, UI, settings)
 - `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json` — default config (copy manually or use **`packaging.distribute_resources_zip`**)
 - `build.py` / `build.json` — compile `.pyc` and pack **`release/caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`**
-- `release/` — versioned `.wotmod` and **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.zip`** (this mod + `caphhh.modssettingsapi_<version>.wotmod`); tracked in Git for releases
+- `release/` — **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`**, vendor **`izeberg` / Mods List / Gameface** `.wotmod` files, and **`RealtimeDispersion&AimTimeRemaining-<version>.zip`** (zip = four `.wotmod`); tracked in Git for releases
 
 ## Dependencies & acknowledgments / 依赖与致谢
 
 **English:** Optional **ModSettingsAPI** integration in this mod relies on upstream projects that maintain the shared settings stack. Thanks to their authors and maintainers for the APIs and documentation.
 
-- **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — in-game settings framework for World of Tanks mods (maintained by [izeberg](https://github.com/izeberg)); this repo bundles **`caphhh.modssettingsapi_<version>.wotmod`** in distribute zips by default.
+- **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — in-game settings framework for World of Tanks mods (maintained by [izeberg](https://github.com/izeberg)); this repo bundles **`izeberg.modssettingsapi_1.7.0.wotmod`** in distribute zips (upstream release asset naming).
 - **[Mods List](https://gitlab.com/wot-public-mods/mods-list)** — **ModsList API** hub (WoT public mods / Poliroid); ModsSettingsAPI [documents](https://github.com/izeberg/modssettingsapi) ModsList as a required dependency for opening the settings window.
 - **[OpenWG Gameface](https://gitlab.com/openwg/wot.gameface/)** — Gameface UI layer used by Mods List; install **`net.openwg.gameface_*.wotmod`** alongside Mods List when using that stack.
 
 **中文：** 本模组对 **ModSettingsAPI** 的接入依赖上述上游项目维护的通用设置栈，感谢相关作者与维护者提供的接口与文档。
 
-- **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — 游戏内模组设置框架（[izeberg](https://github.com/izeberg) 维护）；本仓库发布用 zip 中默认附带 **`caphhh.modssettingsapi_<版本>.wotmod`**。
+- **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — 游戏内模组设置框架（[izeberg](https://github.com/izeberg) 维护）；本仓库发布 zip 中附带 **`izeberg.modssettingsapi_1.7.0.wotmod`**（与上游发布文件名一致）。
 - **[Mods List](https://gitlab.com/wot-public-mods/mods-list)** — **ModsList API** 聚合入口（WoT public mods / Poliroid）；ModsSettingsAPI 说明中要求依赖 ModsList 以打开设置界面。
 - **[OpenWG Gameface](https://gitlab.com/openwg/wot.gameface/)** — Mods List 使用的 Gameface UI 层；使用 Mods List 时需同时安装 **`net.openwg.gameface_*.wotmod`**。
 

@@ -48,17 +48,16 @@ def copytree(source, destination):
             shutil.copy2(os.path.join(root, name), os.path.join(target_root, name))
 
 
-def zip_distribute_bundle(main_wotmod_path, modsettings_wotmod_path, destination_zip, modsettings_arcname):
+def zip_distribute_bundle(main_wotmod_path, extra_wotmod_paths, destination_zip):
     """
-    Flat zip with exactly two .wotmod entries for release:
-    <stem>-<modVersion>.wotmod and caphhh.modssettingsapi_<apiVersion>.wotmod
+    Flat zip: main build .wotmod plus vendor .wotmod files (ZIP_STORED).
+    extra_wotmod_paths: list of absolute paths; arcnames are basenames.
     """
     archive = zipfile.ZipFile(destination_zip, 'w', zipfile.ZIP_STORED)
     try:
-        entries = (
-            (main_wotmod_path, os.path.basename(main_wotmod_path)),
-            (modsettings_wotmod_path, modsettings_arcname),
-        )
+        entries = [(main_wotmod_path, os.path.basename(main_wotmod_path))]
+        for path in extra_wotmod_paths:
+            entries.append((path, os.path.basename(path)))
         for path, arcname in entries:
             if not os.path.isfile(path):
                 raise IOError('Release bundle missing file: %s' % path)
@@ -335,21 +334,23 @@ def main():
             print('Built %s' % resources_zip)
 
         if packaging.get('github_release_bundle', True):
-            modsettings_ver = str(packaging.get('modssettingsapi_version', '1.7.0'))
-            modsettings_arc = 'caphhh.modssettingsapi_%s.wotmod' % modsettings_ver
-            bundle_rel = packaging.get('github_release_bundle_wotmod')
-            if bundle_rel:
-                bundle_path = bundle_rel
+            extra_rels = packaging.get('distribute_bundle_extra_wotmods')
+            if not extra_rels:
+                raise ValueError(
+                    'Set packaging.distribute_bundle_extra_wotmods in build.json to a list of '
+                    'paths (relative to repo root) for vendor .wotmod files shipped in the distribute zip.'
+                )
+            extra_paths = []
+            for rel in extra_rels:
+                bundle_path = rel.strip()
+                if not bundle_path:
+                    continue
                 if not os.path.isabs(bundle_path):
                     bundle_path = os.path.normpath(os.path.join(repo_root, bundle_path))
-            else:
-                bundle_path = os.path.join(repo_root, 'release', modsettings_arc)
-            zip_distribute_bundle(
-                output_package,
-                bundle_path,
-                output_archive,
-                modsettings_arcname=modsettings_arc,
-            )
+                if not os.path.isfile(bundle_path):
+                    raise IOError('Release bundle missing vendor file: %s' % bundle_path)
+                extra_paths.append(bundle_path)
+            zip_distribute_bundle(output_package, extra_paths, output_archive)
             print('Built %s' % output_archive)
 
     if args.ingame:
