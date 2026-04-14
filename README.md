@@ -103,6 +103,20 @@ If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **
 - `build.py` / `build.json` — compile `.pyc` and pack **`release/caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`**
 - `release/` — versioned `.wotmod` and **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.zip`** (this mod + `caphhh.modssettingsapi_<version>.wotmod`); tracked in Git for releases
 
+## Dependencies & acknowledgments / 依赖与致谢
+
+**English:** Optional **ModSettingsAPI** integration in this mod relies on upstream projects that maintain the shared settings stack. Thanks to their authors and maintainers for the APIs and documentation.
+
+- **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — in-game settings framework for World of Tanks mods (maintained by [izeberg](https://github.com/izeberg)); this repo bundles **`caphhh.modssettingsapi_<version>.wotmod`** in distribute zips by default.
+- **[Mods List](https://gitlab.com/wot-public-mods/mods-list)** — **ModsList API** hub (WoT public mods / Poliroid); ModsSettingsAPI [documents](https://github.com/izeberg/modssettingsapi) ModsList as a required dependency for opening the settings window.
+- **[OpenWG Gameface](https://gitlab.com/openwg/wot.gameface/)** — Gameface UI layer used by Mods List; install **`net.openwg.gameface_*.wotmod`** alongside Mods List when using that stack.
+
+**中文：** 本模组对 **ModSettingsAPI** 的接入依赖上述上游项目维护的通用设置栈，感谢相关作者与维护者提供的接口与文档。
+
+- **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — 游戏内模组设置框架（[izeberg](https://github.com/izeberg) 维护）；本仓库发布用 zip 中默认附带 **`caphhh.modssettingsapi_<版本>.wotmod`**。
+- **[Mods List](https://gitlab.com/wot-public-mods/mods-list)** — **ModsList API** 聚合入口（WoT public mods / Poliroid）；ModsSettingsAPI 说明中要求依赖 ModsList 以打开设置界面。
+- **[OpenWG Gameface](https://gitlab.com/openwg/wot.gameface/)** — Mods List 使用的 Gameface UI 层；使用 Mods List 时需同时安装 **`net.openwg.gameface_*.wotmod`**。
+
 ## License / 许可证
 
 This program is free software: you can redistribute it and/or modify it under the terms of the **GNU General Public License v3.0** as published by the Free Software Foundation. See the [`LICENSE`](LICENSE) file.
