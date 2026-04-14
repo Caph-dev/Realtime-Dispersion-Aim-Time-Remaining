@@ -1,33 +1,30 @@
 # Realtime Dispersion & Aim Time Remaining
 
-**Repository:** [github.com/Walaxy/WOT-Current-Accuracy-Aim-Time](https://github.com/Walaxy/WOT-Current-Accuracy-Aim-Time)
+**中文文档:** [README.zh-CN.md](README.zh-CN.md)
 
-**WGMODS LINK:** [wgmods.net/7612/](https://wgmods.net/7612/)
+**GitHub Link:** [github.com/Walaxy/WOT-Current-Accuracy-Aim-Time](https://github.com/Walaxy/WOT-Current-Accuracy-Aim-Time)
 
-## Description / 简介
+**WGMODS Link:** [wgmods.net/7612/](https://wgmods.net/7612/)
 
-**English:** A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It hooks `PlayerAvatar` dispersion and targeting updates, works with **ModSettingsAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**), committed under **`release/`**.
+## Description
 
-**中文：** 本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。通过挂钩 `PlayerAvatar` 的散布与瞄准信息实现，可选接入 **ModSettingsAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
+A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It works with **ModSettingsAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`**), committed under **`release/`**.
 
 ---
 
-## Usage / 使用方法
+## Usage
 
-### Install / 安装
+### Install
 
 1. Copy **`release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.2.wotmod`** (or the matching **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** from **`release/`**) into your game folder:  
-   `WorldOfTanks/mods/<game_version>/`  
-   （将 **`release/`** 下的 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本>.wotmod`** 复制到游戏目录下的 `mods/<游戏版本号>/`。）
+   `WorldOfTanks/mods/<game_version>/`
 
 2. On first run, the mod creates **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`** next to the game executable if it does not exist. You can also ship the default from this repo:  
-   `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`  
-   （首次运行会自动生成配置；也可手动放置仓库中的默认 `config.json`。）
+   `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`
 
-3. For **ModSettingsAPI** (optional but recommended): copy **all four** `.wotmod` files from **`release/RealtimeDispersion&AimTimeRemaining-<version>.zip`** (or the loose copies in **`release/`**) into `WorldOfTanks/mods/<game_version>/` — this mod, **ModsSettingsAPI** (`izeberg`), **Mods List** (`me.poliroid.modslistapi`), and **Gameface** (`net.openwg`). Then open the mod settings panel in-game; changes are written back to the same JSON file.  
-   （若使用 **ModSettingsAPI**：将 zip 内或 **`release/`** 目录中的 **四个** `.wotmod` 全部拷贝到 `mods/<游戏版本>/`，再在游戏内打开模组设置；选项会写回同一 JSON。）
+3. For **ModSettingsAPI** (optional but recommended): copy **all four** `.wotmod` files from **`release/RealtimeDispersion&AimTimeRemaining-<version>.zip`** (or the loose copies in **`release/`**) into `WorldOfTanks/mods/<game_version>/` — this mod, **ModsSettingsAPI** (`izeberg`), **Mods List** (`me.poliroid.modslistapi`), and **Gameface** (`net.openwg`). Then open the mod settings panel in-game; changes are written back to the same JSON file.
 
-### Build from source / 从源码构建
+### Build from source
 
 1. Install a **Python 2.7** interpreter compatible with the WoT client (same major version as the game’s embedded Python).
 
@@ -55,35 +52,39 @@ Use **`python build.py --ingame`** to copy the `.wotmod` and `resources/out` int
 
 ---
 
-## Configuration / 配置说明
+## Configuration
 
 File path: **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**
 
 Fresh installs start centered on screen (`0.0`, `0.0`). Position is adjusted by dragging the HUD in battle and saved to this file; ModSettings no longer exposes position controls.
 
-| Key | Type | Description (EN) | 说明（中文） |
-|-----|------|------------------|--------------|
-| `enabled` | bool | Master switch; when `false`, the overlay is hidden and hooks stay minimal. | 总开关；为 `false` 时不显示文字。 |
-| `show_dispersion` | bool | Show the line with current dispersion / accuracy value. | 是否显示“当前散布/精度”一行。 |
-| `show_aim_time` | bool | Show the line with remaining aim time (seconds). | 是否显示“剩余缩圈时间”一行。 |
-| `debug_aim_logging` | bool | When `true`, writes throttled **`[AIM_DEBUG]`** lines to **`python.log`** for troubleshooting after game updates. Default `false`. | 为 `true` 时在 **`python.log`** 中输出限频的 **`[AIM_DEBUG]`** 日志，用于版本更新后排查；默认关闭。 |
-| `font_size` | float | Text size (see in-game font presets). | 字号（与游戏内字体档位对应）。 |
-| `font_name` | string | One of: `default_small.font`, `default_medium.font`, `default_large.font`. | 字体预设，三选一。 |
-| `decimal_dispersion` | int | Decimal places for dispersion (0–6). | 散布数值小数位数（0–6）。 |
-| `decimal_aim_time` | int | Decimal places for aim time (0–4). | 缩圈时间小数位数（0–4）。 |
-| `color` | `[R,G,B,A]` | Text color, each channel 0–255. | 文字颜色，RGBA 各 0–255。 |
+| Key | Type | Description |
+|-----|------|-------------|
+| `enabled` | bool | Master switch; when `false`, the overlay is hidden and hooks stay minimal. |
+| `show_dispersion` | bool | Show the line with current dispersion / accuracy value. |
+| `show_aim_time` | bool | Show the line with remaining aim time (seconds). |
+| `debug_aim_logging` | bool | When `true`, writes throttled **`[AIM_DEBUG]`** lines to **`python.log`** for troubleshooting after game updates. Default `false`. |
+| `font_size` | float | Text size (see in-game font presets). |
+| `font_name` | string | One of: `default_small.font`, `default_medium.font`, `default_large.font`. |
+| `decimal_dispersion` | int | Decimal places for dispersion (0–6). |
+| `decimal_aim_time` | int | Decimal places for aim time (0–4). |
+| `color` | `[R,G,B,A]` | Text color, each channel 0–255. |
 
-### Migrating from older paths / 旧路径迁移
+### Migrating from older paths
 
 If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **`mods/configs/caphhh.current_acc_and_aim_time/config.json`**, copy that file to **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`** and add missing new keys if needed.
 
-## Changelog / 更新记录
+## Changelog
 
 ### 1.1.2
 
 - Fix HUD position not persisting after battle/game exit when old ModSettings data exists.
 - Set the default HUD position for fresh installs to the screen center.
 - Remove position options from ModSettings; HUD position is now drag-only.
+
+### 1.1.1
+
+- Skipped.
 
 ### 1.1.0
 
@@ -98,36 +99,28 @@ If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **
 
 ---
 
-## Project layout / 工程结构
+## Project layout
 
 - `python/gui/mods/mod_caphhh_current_acc_and_aim_time.py` — main mod (hooks, UI, settings)
 - `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json` — default config (copy manually or use **`packaging.distribute_resources_zip`**)
 - `build.py` / `build.json` — compile `.pyc` and pack **`release/caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`**
 - `release/` — **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`**, vendor **`izeberg` / Mods List / Gameface** `.wotmod` files, and **`RealtimeDispersion&AimTimeRemaining-<version>.zip`** (zip = four `.wotmod`); tracked in Git for releases
 
-## Dependencies & acknowledgments / 依赖与致谢
+## Dependencies & acknowledgments
 
-**English:** Optional **ModSettingsAPI** integration in this mod relies on upstream projects that maintain the shared settings stack. Thanks to their authors and maintainers for the APIs and documentation.
+Optional **ModSettingsAPI** integration in this mod relies on upstream projects that maintain the shared settings stack. Thanks to their authors and maintainers for the APIs and documentation.
 
 - **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — in-game settings framework for World of Tanks mods (maintained by [izeberg](https://github.com/izeberg)); this repo bundles **`izeberg.modssettingsapi_1.7.0.wotmod`** in distribute zips (upstream release asset naming).
 - **[Mods List](https://gitlab.com/wot-public-mods/mods-list)** — **ModsList API** hub (WoT public mods / Poliroid); ModsSettingsAPI [documents](https://github.com/izeberg/modssettingsapi) ModsList as a required dependency for opening the settings window.
 - **[OpenWG Gameface](https://gitlab.com/openwg/wot.gameface/)** — Gameface UI layer used by Mods List; install **`net.openwg.gameface_*.wotmod`** alongside Mods List when using that stack.
 
-**中文：** 本模组对 **ModSettingsAPI** 的接入依赖上述上游项目维护的通用设置栈，感谢相关作者与维护者提供的接口与文档。
-
-- **[ModsSettingsAPI](https://github.com/izeberg/modssettingsapi)** — 游戏内模组设置框架（[izeberg](https://github.com/izeberg) 维护）；本仓库发布 zip 中附带 **`izeberg.modssettingsapi_1.7.0.wotmod`**（与上游发布文件名一致）。
-- **[Mods List](https://gitlab.com/wot-public-mods/mods-list)** — **ModsList API** 聚合入口（WoT public mods / Poliroid）；ModsSettingsAPI 说明中要求依赖 ModsList 以打开设置界面。
-- **[OpenWG Gameface](https://gitlab.com/openwg/wot.gameface/)** — Mods List 使用的 Gameface UI 层；使用 Mods List 时需同时安装 **`net.openwg.gameface_*.wotmod`**。
-
-## License / 许可证
+## License
 
 This program is free software: you can redistribute it and/or modify it under the terms of the **GNU General Public License v3.0** as published by the Free Software Foundation. See the [`LICENSE`](LICENSE) file.
 
-本程序为自由软件：您可以在遵循 **GNU 通用公共许可证第 3 版（GPL-3.0）** 的前提下再发布和/或修改。完整条款见仓库根目录的 [`LICENSE`](LICENSE)。
-
 **Copyright (C) 2026 Walaxy** \<wlx0414@foxmail.com\>
 
-## Reference / 参考
+## Reference
 
 Implementation draws on ideas from [true-server-reticle](https://github.com/Archie-osu/true-server-reticle) for live dispersion and aim-time behavior.
 
