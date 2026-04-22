@@ -18,9 +18,13 @@ except ImportError:
 
 try:
     from gambiter import g_guiFlash
+    import gambiter.flash as gambiter_flash_module
     from gambiter.flash import COMPONENT_TYPE
-except ImportError:
+    _GUIFLASH_IMPORT_ERROR = None
+except Exception as exc:
+    _GUIFLASH_IMPORT_ERROR = repr(exc)
     g_guiFlash = None
+    gambiter_flash_module = None
     COMPONENT_TYPE = None
 
 try:
@@ -97,8 +101,8 @@ def _caphhh_resolve_aiming_time_seconds(avatar):
             if gun is not None:
                 for key in ('aimingTime', 'aimTime'):
                     v = getattr(gun, key, None)
-                    if v is None and hasattr(gun, 'get'):
-                        v = gun.get(key)
+                    if v is None:
+                        v = _caphhh_get_value(gun, key)
                     if v is not None:
                         fv = float(v)
                         if fv > 0.0:
@@ -123,12 +127,7 @@ def _caphhh_ideal_dispersion(avatar):
         gun = getattr(descr, 'gun', None)
         if gun is None:
             return None
-        if hasattr(gun, 'get'):
-            base = gun.get('shotDispersionAngle')
-        elif isinstance(gun, dict):
-            base = gun.get('shotDispersionAngle')
-        else:
-            base = getattr(gun, 'shotDispersionAngle', None)
+        base = _caphhh_get_value(gun, 'shotDispersionAngle')
         if base is None:
             return None
         base = float(base)
@@ -315,7 +314,7 @@ def _drag_debug_log(message, force=False):
 
 MOD_ID = 'caphhh.realtimeDispersionAimTimeRemaining'
 MOD_NAME = 'Realtime Dispersion & Aim Time Remaining'
-MOD_VERSION = '1.1.2'
+MOD_VERSION = '1.1.3'
 CONFIG_FOLDER_NAME = 'RealtimeDispersion&AimTimeRemaining'
 CONFIG_RELATIVE_PATH = os.path.join('mods', 'configs', CONFIG_FOLDER_NAME, 'config.json')
 LEGACY_CONFIG_RELATIVE_PATHS = (
@@ -677,6 +676,9 @@ class CrosshairTextRenderer(object):
         self._dispersion_label = None
         self._aim_time_label = None
         self._guiflash_created = set()
+        self._backend_logged = False
+        self._first_update_logged = False
+        self._guiflash_failure_logged = False
         self._label_aliases = {
             'dispersion': 'caphhhCurrentDispersionLabel',
             'aim_time': 'caphhhAimTimeLabel',
@@ -684,6 +686,80 @@ class CrosshairTextRenderer(object):
 
     def _is_guiflash_ready(self):
         return g_guiFlash is not None and COMPONENT_TYPE is not None
+
+    def _log_backend_once(self):
+        if self._backend_logged:
+            return
+        self._backend_logged = True
+        screen_width = 1920
+        screen_height = 1080
+        if BigWorld is not None:
+            try:
+                screen_width = max(1, int(BigWorld.screenWidth()))
+                screen_height = max(1, int(BigWorld.screenHeight()))
+            except Exception:
+                pass
+        offset_x, offset_y = _get_active_offsets()
+        backend = 'gambiter.guiflash' if self._is_guiflash_ready() else 'GUI.Text'
+        guiflash_ui = None
+        guiflash_cache_size = None
+        if gambiter_flash_module is not None:
+            try:
+                guiflash_ui = getattr(getattr(gambiter_flash_module, 'g_guiViews', None), 'ui', None) is not None
+            except Exception:
+                guiflash_ui = None
+            try:
+                cache = getattr(gambiter_flash_module, 'g_guiCache', None)
+                if cache is not None and hasattr(cache, 'getKeys'):
+                    guiflash_cache_size = len(cache.getKeys())
+            except Exception:
+                guiflash_cache_size = None
+        log('Renderer backend=%s gui=%r guiflash=%r component_type=%r import_error=%r screen=%dx%d offsets=(%.4f, %.4f) line_spacing=%.4f' % (
+            backend,
+            GUI is not None,
+            g_guiFlash is not None,
+            COMPONENT_TYPE is not None,
+            _GUIFLASH_IMPORT_ERROR,
+            screen_width,
+            screen_height,
+            offset_x,
+            offset_y,
+            float(SETTINGS.get('line_spacing', 0.0)),
+        ))
+        log('Renderer backend state guiflash_ui=%r guiflash_cache_size=%r' % (
+            guiflash_ui,
+            guiflash_cache_size,
+        ))
+
+    def _log_first_update_once(self, visible_texts):
+        if self._first_update_logged:
+            return
+        self._first_update_logged = True
+        positions = []
+        line_index = 0
+        for kind, _text in visible_texts:
+            if self._is_guiflash_ready():
+                positions.append((kind, self._pixel_position_for_line(line_index)))
+            else:
+                screen_width = 1920
+                screen_height = 1080
+                if BigWorld is not None:
+                    try:
+                        screen_width = max(1, int(BigWorld.screenWidth()))
+                        screen_height = max(1, int(BigWorld.screenHeight()))
+                    except Exception:
+                        pass
+                offset_x, offset_y = _get_active_offsets()
+                positions.append((kind, (
+                    int((screen_width * 0.5) + (offset_x * screen_width)),
+                    int((screen_height * 0.5) + (offset_y * screen_height) + (SETTINGS['line_spacing'] * screen_height * line_index)),
+                )))
+            line_index += 1
+        log('Renderer first update backend=%s texts=%r positions=%r' % (
+            'gambiter.guiflash' if self._is_guiflash_ready() else 'GUI.Text',
+            [kind for kind, _text in visible_texts],
+            positions,
+        ))
 
     def _color_to_html(self):
         color = SETTINGS['color']
@@ -748,13 +824,23 @@ class CrosshairTextRenderer(object):
                 g_guiFlash.updateComponent(alias, props, None)
                 return
             except Exception:
+                if not self._guiflash_failure_logged:
+                    self._guiflash_failure_logged = True
+                    log('GUIFlash updateComponent failed alias=%s props=%r' % (alias, props))
+                    LOG_CURRENT_EXCEPTION()
                 try:
                     g_guiFlash.deleteComponent(alias)
                 except Exception:
                     pass
                 self._guiflash_created.discard(alias)
-        g_guiFlash.createComponent(alias, COMPONENT_TYPE.LABEL, props)
-        self._guiflash_created.add(alias)
+        try:
+            g_guiFlash.createComponent(alias, COMPONENT_TYPE.LABEL, props)
+            self._guiflash_created.add(alias)
+        except Exception:
+            if not self._guiflash_failure_logged:
+                self._guiflash_failure_logged = True
+                log('GUIFlash createComponent failed alias=%s props=%r' % (alias, props))
+                LOG_CURRENT_EXCEPTION()
 
     def _delete_guiflash_one(self, alias):
         if not self._is_guiflash_ready():
@@ -854,6 +940,7 @@ class CrosshairTextRenderer(object):
             pass
 
     def ensure(self):
+        self._log_backend_once()
         if self._is_guiflash_ready():
             return
         if self._dispersion_label is None:
@@ -978,6 +1065,8 @@ class CrosshairTextRenderer(object):
         if not visible_texts:
             self.hide()
             return
+
+        self._log_first_update_once(visible_texts)
 
         shown_kinds = set()
         line_index = 0
@@ -1400,12 +1489,7 @@ def hook_update_targeting_info(
                 getattr(self, 'playerVehicleID', None)
             ))
             return result
-        if hasattr(gun, 'get'):
-            base = gun.get('shotDispersionAngle')
-        elif isinstance(gun, dict):
-            base = gun.get('shotDispersionAngle')
-        else:
-            base = getattr(gun, 'shotDispersionAngle', None)
+        base = _caphhh_get_value(gun, 'shotDispersionAngle')
         if base is None:
             _aiming_debug_log('updateTargetingInfo base=None di=%r gun=%r' % (di, gun))
             return result

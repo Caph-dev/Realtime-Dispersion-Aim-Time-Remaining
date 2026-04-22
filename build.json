@@ -6,13 +6,14 @@
     "game": {
         "force": false,
         "folder": "",
-        "version": "2.2.0.2"
+        "version": "2.2.1.0"
     },
     "packaging": {
         "bundle_guiflash": false,
         "ship_python_source": false,
         "github_release_bundle": true,
         "distribute_bundle_extra_wotmods": [
+            "release/gambiter.guiflash_0.6.3.wotmod",
             "release/izeberg.modssettingsapi_1.7.0.wotmod",
             "release/me.poliroid.modslistapi_1.7.8.wotmod",
             "release/net.openwg.gameface_1.1.5.wotmod"
@@ -23,7 +24,7 @@
         "id": "caphhh.realtimeDispersionAimTimeRemaining",
         "name": "Realtime Dispersion & Aim Time Remaining",
         "description": "Shows realtime dispersion and aim time remaining near the crosshair.",
-        "version": "1.1.2",
+        "version": "1.1.3",
         "package_name": "caphhh.RealtimeDispersion&AimTimeRemaining.wotmod",
         "archive_name": "RealtimeDispersion&AimTimeRemaining.zip"
     }
