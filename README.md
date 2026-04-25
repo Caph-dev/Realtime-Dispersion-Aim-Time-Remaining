@@ -8,7 +8,7 @@
 
 ## Description
 
-A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It works with **ModSettingsAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.3.wotmod`**), committed under **`release/`**.
+A World of Tanks client mod that draws two lines near the crosshair: **realtime gun dispersion** and **aim time remaining** (seconds). It works with **ModSettingsAPI** (optional), and stores settings in JSON under `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`. The built package is **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** (mod version from `build.json` → `info.version`, e.g. **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.4.wotmod`**), committed under **`release/`**.
 
 ---
 
@@ -16,15 +16,15 @@ A World of Tanks client mod that draws two lines near the crosshair: **realtime 
 
 ### Install
 
-1. Copy **`release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.3.wotmod`** (or the matching **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** from **`release/`**) into your game folder:  
+1. Copy **`release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.4.wotmod`** (or the matching **`caphhh.RealtimeDispersion&AimTimeRemaining-<version>.wotmod`** from **`release/`**) into your game folder:
    `WorldOfTanks/mods/<game_version>/`
 
 2. On first run, the mod creates **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`** next to the game executable if it does not exist. You can also ship the default from this repo:  
    `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`
 
-3. For the recommended full stack on **WoT 2.2.1.0+**: copy **all five** `.wotmod` files from **`release/RealtimeDispersion&AimTimeRemaining-<version>.zip`** (or the loose copies in **`release/`**) into `WorldOfTanks/mods/<game_version>/` — this mod, **GUIFlash** (`gambiter.guiflash_0.6.3.wotmod`), **ModsSettingsAPI** (`izeberg`), **Mods List** (`me.poliroid.modslistapi`), and **Gameface** (`net.openwg`). Then open the mod settings panel in-game; changes are written back to the same JSON file.
+3. For the recommended full stack on **WoT 2.2.1.1+**: copy **all five** `.wotmod` files from **`release/RealtimeDispersion&AimTimeRemaining-<version>.zip`** (or the loose copies in **`release/`**) into `WorldOfTanks/mods/<game_version>/` — this mod, **GUIFlash** (`gambiter.guiflash_0.6.3.wotmod`), **ModsSettingsAPI** (`izeberg`), **Mods List** (`me.poliroid.modslistapi`), and **Gameface** (`net.openwg`). Then open the mod settings panel in-game; changes are written back to the same JSON file.
 
-On **WoT 2.2.1.0**, installing **`gambiter.guiflash_0.6.3.wotmod`** is strongly recommended. When available, this mod renders through GUIFlash instead of the legacy `GUI.Text` fallback, which avoids the missing battle HUD issue observed after the 2.2.1.0 update.
+On **WoT 2.2.1.1**, installing **`gambiter.guiflash_0.6.3.wotmod`** is strongly recommended. When available, this mod renders through GUIFlash instead of the legacy `GUI.Text` fallback, which avoids the missing battle HUD issue observed after recent 2.2.1.x updates.
 
 ### Build from source
 
@@ -43,8 +43,8 @@ python build.py --distribute
 
 Outputs (mod version suffix comes from `build.json` → `info.version`):
 
-- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.3.wotmod`
-- `release/RealtimeDispersion&AimTimeRemaining-1.1.3.zip` when using `--distribute`: a flat zip with **five** `.wotmod` files — this mod, **`gambiter.guiflash_0.6.3.wotmod`**, **`izeberg.modssettingsapi_1.7.0.wotmod`**, **`me.poliroid.modslistapi_1.7.8.wotmod`**, **`net.openwg.gameface_1.1.5.wotmod`** (paths listed in **`packaging.distribute_bundle_extra_wotmods`** in **`build.json`**). Vendor files must already sit under **`release/`** before building. This is the **published release** zip for GitHub. Optional: set **`packaging.distribute_resources_zip`** to `true` to also build **`*-<version>-resources.zip`** (mods folder + `resources/out` layout).
+- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.4.wotmod`
+- `release/RealtimeDispersion&AimTimeRemaining-1.1.4.zip` when using `--distribute`: a flat zip with **five** `.wotmod` files — this mod, **`gambiter.guiflash_0.6.3.wotmod`**, **`izeberg.modssettingsapi_1.7.0.wotmod`**, **`me.poliroid.modslistapi_1.7.8.wotmod`**, **`net.openwg.gameface_1.1.5.wotmod`** (paths listed in **`packaging.distribute_bundle_extra_wotmods`** in **`build.json`**). Vendor files must already sit under **`release/`** before building. This is the **published release** zip for GitHub. Optional: set **`packaging.distribute_resources_zip`** to `true` to also build **`*-<version>-resources.zip`** (mods folder + `resources/out` layout).
 
 **Tracked under `release/`:** six artifacts — the five `.wotmod` files above plus the **`.zip`** (the zip contains the same five `.wotmod` entries; keep loose copies for direct installs without unpacking).
 
@@ -77,6 +77,12 @@ Fresh installs start centered on screen (`0.0`, `0.0`). Position is adjusted by 
 If you previously used **`mods/configs/currentAccAndAimTime/config.json`** or **`mods/configs/caphhh.current_acc_and_aim_time/config.json`**, copy that file to **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`** and add missing new keys if needed.
 
 ## Changelog
+
+### 1.1.4
+
+- Hide and tear down the HUD immediately when the player's vehicle is destroyed or crew is deactivated.
+- Prevent later dispersion refresh callbacks from recreating the HUD while the player vehicle is dead.
+- Update the target game version to WoT `2.2.1.1`.
 
 ### 1.1.3
 

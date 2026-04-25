@@ -8,7 +8,7 @@
 
 ## 简介
 
-本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。可选接入 **ModSettingsAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.3.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
+本模组在准星附近显示两行文字：**实时火炮散布**与**剩余缩圈时间（秒）**。可选接入 **ModSettingsAPI**，配置保存在 `mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`。构建产物为 **`caphhh.RealtimeDispersion&AimTimeRemaining-<版本号>.wotmod`**（模组版本见 `build.json` 的 `info.version`，例如 **`caphhh.RealtimeDispersion&AimTimeRemaining-1.1.4.wotmod`**），并放在仓库的 **`release/`** 目录中随 Git 发布。
 
 ---
 
@@ -22,9 +22,9 @@
 2. 首次运行会在游戏可执行文件旁自动生成 **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**；也可手动放置仓库中的默认配置：  
    `resources/out/mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`
 
-3. 若使用 **WoT 2.2.1.0+** 下的推荐完整栈：将 **`release/RealtimeDispersion&AimTimeRemaining-<版本>.zip`** 内（或 **`release/`** 目录中已解压的）**五个** `.wotmod` 全部拷贝到 `mods/<游戏版本>/` —— 本模组、**GUIFlash**（`gambiter.guiflash_0.6.3.wotmod`）、**ModsSettingsAPI**（`izeberg`）、**Mods List**（`me.poliroid.modslistapi`）、**Gameface**（`net.openwg`）。然后在游戏内打开模组设置；选项会写回同一 JSON。
+3. 若使用 **WoT 2.2.1.1+** 下的推荐完整栈：将 **`release/RealtimeDispersion&AimTimeRemaining-<版本>.zip`** 内（或 **`release/`** 目录中已解压的）**五个** `.wotmod` 全部拷贝到 `mods/<游戏版本>/` —— 本模组、**GUIFlash**（`gambiter.guiflash_0.6.3.wotmod`）、**ModsSettingsAPI**（`izeberg`）、**Mods List**（`me.poliroid.modslistapi`）、**Gameface**（`net.openwg`）。然后在游戏内打开模组设置；选项会写回同一 JSON。
 
-在 **WoT 2.2.1.0** 上，强烈建议安装 **`gambiter.guiflash_0.6.3.wotmod`**。检测到该依赖时，本模组会优先走 GUIFlash 渲染路径，而不是旧的 `GUI.Text` 回退方案；这可以避开 2.2.1.0 更新后战斗 HUD 不显示的问题。
+在 **WoT 2.2.1.1** 上，强烈建议安装 **`gambiter.guiflash_0.6.3.wotmod`**。检测到该依赖时，本模组会优先走 GUIFlash 渲染路径，而不是旧的 `GUI.Text` 回退方案；这可以避开近期 2.2.1.x 更新后战斗 HUD 不显示的问题。
 
 ### 从源码构建
 
@@ -43,8 +43,8 @@ python build.py --distribute
 
 构建输出（版本后缀来自 `build.json` → `info.version`）：
 
-- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.3.wotmod`
-- 使用 `--distribute` 时还会生成 **`release/RealtimeDispersion&AimTimeRemaining-1.1.3.zip`**：扁平 zip，内含 **五个** `.wotmod` —— 本模组、**`gambiter.guiflash_0.6.3.wotmod`**、**`izeberg.modssettingsapi_1.7.0.wotmod`**、**`me.poliroid.modslistapi_1.7.8.wotmod`**、**`net.openwg.gameface_1.1.5.wotmod`**（路径见 **`build.json`** 的 **`packaging.distribute_bundle_extra_wotmods`**）。构建前请先将上述第三方 **`release/`** 文件放好。该 zip 为面向 GitHub 的**发布包**。可选：将 **`packaging.distribute_resources_zip`** 设为 `true`，额外生成 **`*-<版本>-resources.zip`**（mods 目录 + `resources/out` 布局）。
+- `release/caphhh.RealtimeDispersion&AimTimeRemaining-1.1.4.wotmod`
+- 使用 `--distribute` 时还会生成 **`release/RealtimeDispersion&AimTimeRemaining-1.1.4.zip`**：扁平 zip，内含 **五个** `.wotmod` —— 本模组、**`gambiter.guiflash_0.6.3.wotmod`**、**`izeberg.modssettingsapi_1.7.0.wotmod`**、**`me.poliroid.modslistapi_1.7.8.wotmod`**、**`net.openwg.gameface_1.1.5.wotmod`**（路径见 **`build.json`** 的 **`packaging.distribute_bundle_extra_wotmods`**）。构建前请先将上述第三方 **`release/`** 文件放好。该 zip 为面向 GitHub 的**发布包**。可选：将 **`packaging.distribute_resources_zip`** 设为 `true`，额外生成 **`*-<版本>-resources.zip`**（mods 目录 + `resources/out` 布局）。
 
 **`release/` 目录约定：** 共 **六** 个文件 —— 上述五个 `.wotmod` 加上 **`.zip`**（zip 内为同样的五个 `.wotmod`；保留解压后的 loose 文件便于不解压直接拷贝）。
 
@@ -77,6 +77,12 @@ python build.py --distribute
 若曾使用 **`mods/configs/currentAccAndAimTime/config.json`** 或 **`mods/configs/caphhh.current_acc_and_aim_time/config.json`**，请将文件复制到 **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**，并视情况补全新增键。
 
 ## 更新记录
+
+### 1.1.4
+
+- 玩家坦克被摧毁或乘员失效时，立即隐藏并清理 HUD。
+- 防止坦克已被击毁后，后续散布刷新回调再次重建 HUD。
+- 将目标游戏版本更新为 WoT `2.2.1.1`。
 
 ### 1.1.3
 
