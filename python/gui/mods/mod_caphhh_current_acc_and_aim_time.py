@@ -314,7 +314,7 @@ def _drag_debug_log(message, force=False):
 
 MOD_ID = 'caphhh.realtimeDispersionAimTimeRemaining'
 MOD_NAME = 'Realtime Dispersion & Aim Time Remaining'
-MOD_VERSION = '1.1.3'
+MOD_VERSION = '1.1.4'
 CONFIG_FOLDER_NAME = 'RealtimeDispersion&AimTimeRemaining'
 CONFIG_RELATIVE_PATH = os.path.join('mods', 'configs', CONFIG_FOLDER_NAME, 'config.json')
 LEGACY_CONFIG_RELATIVE_PATHS = (
@@ -1359,6 +1359,75 @@ def _try_get_player():
         return None
 
 
+def _get_bigworld_entity(entity_id):
+    if BigWorld is None or entity_id is None:
+        return None
+    try:
+        entity_getter = getattr(BigWorld, 'entity', None)
+        if callable(entity_getter):
+            return entity_getter(entity_id)
+    except Exception:
+        pass
+    try:
+        entities = getattr(BigWorld, 'entities', None)
+        if entities is not None:
+            return entities.get(entity_id)
+    except Exception:
+        pass
+    return None
+
+
+def _is_avatar_vehicle_alive(avatar):
+    if avatar is None:
+        return False
+    try:
+        alive = getattr(avatar, 'isVehicleAlive', None)
+        if alive is not None:
+            if callable(alive):
+                return bool(alive())
+            return bool(alive)
+    except Exception:
+        pass
+    try:
+        vehicle = _get_bigworld_entity(getattr(avatar, 'playerVehicleID', None))
+        if vehicle is not None:
+            is_alive = getattr(vehicle, 'isAlive', None)
+            if callable(is_alive):
+                return bool(is_alive())
+            health = getattr(vehicle, 'health', None)
+            if health is not None:
+                return float(health) > 0.0
+    except Exception:
+        pass
+    return True
+
+
+def _health_update_means_dead(health, is_crew_active):
+    try:
+        if float(health) <= 0.0:
+            return True
+    except Exception:
+        pass
+    return is_crew_active in (False, 0)
+
+
+def _is_player_vehicle_update(avatar, vehicle_id):
+    try:
+        return vehicle_id == getattr(avatar, 'playerVehicleID', None)
+    except Exception:
+        return False
+
+
+def _clear_own_vehicle_hud():
+    try:
+        _HUD_DRAG.end_drag(save=True)
+        _reset_aiming_runtime()
+        reset_floor_tracker()
+        RENDERER.destroy()
+    except Exception:
+        LOG_CURRENT_EXCEPTION()
+
+
 def calculate_aim_time_remaining(avatar, dispersion_result, turret_rotation_speed, with_shot):
     """
     Remaining aim time (wotstat-style, all inlined — no external module):
@@ -1417,6 +1486,9 @@ def update_display(avatar, dispersion, aim_time_remaining):
     player = _try_get_player()
     if player is not None and avatar is not player:
         return
+    if not _is_avatar_vehicle_alive(avatar):
+        _clear_own_vehicle_hud()
+        return
 
     interval = SETTINGS.get('display_update_interval', DEFAULT_SETTINGS['display_update_interval'])
     if interval <= 0.0:
@@ -1436,6 +1508,9 @@ def update_display(avatar, dispersion, aim_time_remaining):
 def hook_get_own_vehicle_shot_dispersion_angle(original, self, turret_rotation_speed, with_shot=0):
     result = original(self, turret_rotation_speed, with_shot)
     try:
+        if not _is_avatar_vehicle_alive(self):
+            _clear_own_vehicle_hud()
+            return result
         current_dispersion = float(result[0]) * 100.0
         aim_time_remaining = calculate_aim_time_remaining(self, result, turret_rotation_speed, with_shot)
         global _last_hud_dispersion, _last_hud_aim_time
@@ -1445,6 +1520,15 @@ def hook_get_own_vehicle_shot_dispersion_angle(original, self, turret_rotation_s
     except Exception:
         LOG_CURRENT_EXCEPTION()
     return result
+
+
+def hook_update_vehicle_health(original, self, vehicleID, health, deathReasonID, isCrewActive, isRespawn):
+    try:
+        if _is_player_vehicle_update(self, vehicleID) and _health_update_means_dead(health, isCrewActive):
+            _clear_own_vehicle_hud()
+    except Exception:
+        LOG_CURRENT_EXCEPTION()
+    return original(self, vehicleID, health, deathReasonID, isCrewActive, isRespawn)
 
 
 def hook_update_targeting_info(
@@ -1553,10 +1637,7 @@ def hook_on_become_player(original, self):
 
 def hook_on_become_non_player(original, self):
     try:
-        _HUD_DRAG.end_drag(save=True)
-        _reset_aiming_runtime()
-        reset_floor_tracker()
-        RENDERER.destroy()
+        _clear_own_vehicle_hud()
     except Exception:
         LOG_CURRENT_EXCEPTION()
     return original(self)
@@ -1566,10 +1647,7 @@ def hook_destroy(original, self):
     try:
         player = _try_get_player()
         if self is player:
-            _HUD_DRAG.end_drag(save=True)
-            _reset_aiming_runtime()
-            reset_floor_tracker()
-            RENDERER.destroy()
+            _clear_own_vehicle_hud()
     except Exception:
         LOG_CURRENT_EXCEPTION()
     return original(self)
@@ -1910,6 +1988,7 @@ def install_hooks():
 
     install_hook(PlayerAvatar, 'getOwnVehicleShotDispersionAngle', hook_get_own_vehicle_shot_dispersion_angle)
     install_hook(PlayerAvatar, 'updateTargetingInfo', hook_update_targeting_info)
+    install_hook(PlayerAvatar, 'updateVehicleHealth', hook_update_vehicle_health)
     install_hook(PlayerAvatar, 'onBecomePlayer', hook_on_become_player)
     install_hook(PlayerAvatar, 'onBecomeNonPlayer', hook_on_become_non_player)
     install_hook(PlayerAvatar, 'destroy', hook_destroy)

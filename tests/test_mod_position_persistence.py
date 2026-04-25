@@ -22,6 +22,10 @@ def load_mod_module():
         spec = importlib.util.spec_from_file_location('test_mod_under_test', MODULE_PATH)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+        module.CONFIG_RELATIVE_PATH = os.path.join(temp_dir.name, module.CONFIG_RELATIVE_PATH)
+        module.LEGACY_CONFIG_RELATIVE_PATHS = tuple(
+            os.path.join(temp_dir.name, path) for path in module.LEGACY_CONFIG_RELATIVE_PATHS
+        )
     finally:
         os.chdir(old_cwd)
     return module, temp_dir
@@ -44,6 +48,44 @@ class _FakeModsSettingsApi(object):
         self.templates.append((mod_id, template))
         self.callbacks.append((mod_id, callback))
         return None
+
+
+class _FakeRenderer(object):
+    def __init__(self):
+        self.destroy_calls = 0
+        self.update_calls = []
+
+    def destroy(self):
+        self.destroy_calls += 1
+
+    def update(self, dispersion, aim_time_remaining):
+        self.update_calls.append((dispersion, aim_time_remaining))
+
+    def ensure(self):
+        pass
+
+    def hide(self):
+        pass
+
+    def apply_settings(self):
+        pass
+
+
+class _FakeBigWorld(object):
+    def __init__(self, player):
+        self._player = player
+
+    def player(self):
+        return self._player
+
+    def time(self):
+        return 1.0
+
+
+class _FakeAvatar(object):
+    def __init__(self, vehicle_id=7, alive=True):
+        self.playerVehicleID = vehicle_id
+        self.isVehicleAlive = alive
 
 
 class PositionPersistenceTests(unittest.TestCase):
@@ -131,6 +173,68 @@ class PositionPersistenceTests(unittest.TestCase):
         self.assertNotIn('offset_y_arcade', variable_names)
         self.assertNotIn('offset_x_sniper', variable_names)
         self.assertNotIn('offset_y_sniper', variable_names)
+
+
+class DestroyedVehicleHudTests(unittest.TestCase):
+    def test_vehicle_death_health_update_clears_hud_before_original(self):
+        module, temp_dir = load_mod_module()
+        self.addCleanup(temp_dir.cleanup)
+
+        avatar = _FakeAvatar(vehicle_id=7, alive=True)
+        renderer = _FakeRenderer()
+        module.BigWorld = _FakeBigWorld(avatar)
+        module.RENDERER = renderer
+        module.AIMING_RUNTIME['vehicle_id'] = 7
+        module.AIMING_RUNTIME['ideal_dispersion'] = 0.3
+        module.AIMING_RUNTIME['aiming_time'] = 2.0
+        calls = []
+
+        def original(self, vehicle_id, health, death_reason_id, is_crew_active, is_respawn):
+            calls.append((self, vehicle_id, health, death_reason_id, is_crew_active, is_respawn, renderer.destroy_calls))
+            return 'original-result'
+
+        result = module.hook_update_vehicle_health(original, avatar, 7, 0, 1, True, False)
+
+        self.assertEqual(result, 'original-result')
+        self.assertEqual(renderer.destroy_calls, 1)
+        self.assertEqual(calls[0][-1], 1)
+        self.assertIsNone(module.AIMING_RUNTIME['vehicle_id'])
+        self.assertIsNone(module.AIMING_RUNTIME['ideal_dispersion'])
+        self.assertEqual(module.AIMING_RUNTIME['aiming_time'], 0.0)
+
+    def test_update_display_does_not_restore_hud_after_death(self):
+        module, temp_dir = load_mod_module()
+        self.addCleanup(temp_dir.cleanup)
+
+        avatar = _FakeAvatar(vehicle_id=7, alive=False)
+        renderer = _FakeRenderer()
+        module.BigWorld = _FakeBigWorld(avatar)
+        module.RENDERER = renderer
+
+        module.update_display(avatar, 12.5, 0.75)
+
+        self.assertEqual(renderer.update_calls, [])
+        self.assertEqual(renderer.destroy_calls, 1)
+
+    def test_dispersion_hook_does_not_restore_hud_after_death(self):
+        module, temp_dir = load_mod_module()
+        self.addCleanup(temp_dir.cleanup)
+
+        avatar = _FakeAvatar(vehicle_id=7, alive=False)
+        renderer = _FakeRenderer()
+        module.BigWorld = _FakeBigWorld(avatar)
+        module.RENDERER = renderer
+
+        result = module.hook_get_own_vehicle_shot_dispersion_angle(
+            lambda _self, _turret_rotation_speed, _with_shot=0: (0.12, 0.12),
+            avatar,
+            0.0,
+            0,
+        )
+
+        self.assertEqual(result, (0.12, 0.12))
+        self.assertEqual(renderer.update_calls, [])
+        self.assertEqual(renderer.destroy_calls, 1)
 
 
 if __name__ == '__main__':
