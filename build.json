@@ -6,7 +6,7 @@
     "game": {
         "force": false,
         "folder": "",
-        "version": "2.2.1.1"
+        "version": "2.3.0.0"
     },
     "packaging": {
         "bundle_guiflash": false,
