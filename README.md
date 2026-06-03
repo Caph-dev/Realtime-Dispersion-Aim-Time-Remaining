@@ -2,8 +2,6 @@
 
 **中文文档:** [README.zh-CN.md](README.zh-CN.md)
 
-**GitHub Link:** [github.com/Walaxy/WOT-Current-Accuracy-Aim-Time](https://github.com/Walaxy/WOT-Current-Accuracy-Aim-Time)
-
 **WGMODS Link:** [wgmods.net/7612/](https://wgmods.net/7612/)
 
 ## Description
