@@ -314,7 +314,7 @@ def _drag_debug_log(message, force=False):
 
 MOD_ID = 'caphhh.realtimeDispersionAimTimeRemaining'
 MOD_NAME = 'Realtime Dispersion & Aim Time Remaining'
-MOD_VERSION = '1.1.4'
+MOD_VERSION = '1.1.5'
 CONFIG_FOLDER_NAME = 'RealtimeDispersion&AimTimeRemaining'
 CONFIG_RELATIVE_PATH = os.path.join('mods', 'configs', CONFIG_FOLDER_NAME, 'config.json')
 LEGACY_CONFIG_RELATIVE_PATHS = (
@@ -1505,9 +1505,18 @@ def update_display(avatar, dispersion, aim_time_remaining):
     RENDERER.update(dispersion, aim_time_remaining)
 
 
-def hook_get_own_vehicle_shot_dispersion_angle(original, self, turret_rotation_speed, with_shot=0):
-    result = original(self, turret_rotation_speed, with_shot)
+def _caphhh_positional(args, kwargs, index, name, default=None):
+    """Read a client call argument by position, falling back to its keyword name."""
+    if len(args) > index:
+        return args[index]
+    return kwargs.get(name, default)
+
+
+def hook_get_own_vehicle_shot_dispersion_angle(original, self, *args, **kwargs):
+    result = original(self, *args, **kwargs)
     try:
+        turret_rotation_speed = _caphhh_positional(args, kwargs, 0, 'turretRotationSpeed', 0.0)
+        with_shot = _caphhh_positional(args, kwargs, 1, 'withShot', 0)
         if not _is_avatar_vehicle_alive(self):
             _clear_own_vehicle_hud()
             return result
@@ -1522,45 +1531,29 @@ def hook_get_own_vehicle_shot_dispersion_angle(original, self, turret_rotation_s
     return result
 
 
-def hook_update_vehicle_health(original, self, vehicleID, health, deathReasonID, isCrewActive, isRespawn):
+def hook_update_vehicle_health(original, self, *args, **kwargs):
     try:
-        if _is_player_vehicle_update(self, vehicleID) and _health_update_means_dead(health, isCrewActive):
+        vehicle_id = _caphhh_positional(args, kwargs, 0, 'vehicleID')
+        health = _caphhh_positional(args, kwargs, 1, 'health')
+        is_crew_active = _caphhh_positional(args, kwargs, 3, 'isCrewActive')
+        if _is_player_vehicle_update(self, vehicle_id) and _health_update_means_dead(health, is_crew_active):
             _clear_own_vehicle_hud()
     except Exception:
         LOG_CURRENT_EXCEPTION()
-    return original(self, vehicleID, health, deathReasonID, isCrewActive, isRespawn)
+    return original(self, *args, **kwargs)
 
 
-def hook_update_targeting_info(
-    original,
-    self,
-    entityId,
-    turretYaw,
-    gunPitch,
-    maxTurretRotationSpeed,
-    maxGunRotationSpeed,
-    shotDispMultiplierFactor,
-    gunShotDispersionFactorsTurretRotation,
-    chassisShotDispersionFactorsMovement,
-    chassisShotDispersionFactorsRotation,
-    gunShotDispersionFactorsAfterShot,
-    aimingTime
-):
-    result = original(
-        self,
-        entityId,
-        turretYaw,
-        gunPitch,
-        maxTurretRotationSpeed,
-        maxGunRotationSpeed,
-        shotDispMultiplierFactor,
-        gunShotDispersionFactorsTurretRotation,
-        chassisShotDispersionFactorsMovement,
-        chassisShotDispersionFactorsRotation,
-        gunShotDispersionFactorsAfterShot,
-        aimingTime
-    )
+def hook_update_targeting_info(original, self, *args, **kwargs):
+    # Argument order per wot-src sources/res/scripts/client/Avatar.py:1378 (2.4.0.0):
+    # entityId, turretYaw, gunPitch, maxTurretRotationSpeed, maxGunRotationSpeed,
+    # shotDispMultiplierFactor, gunShotDispersionFactorsTurretRotation,
+    # chassisShotDispersionFactorsMovement, chassisShotDispersionFactorsRotation,
+    # gunShotDispersionFactorsAfterShot, aimingTime
+    result = original(self, *args, **kwargs)
     try:
+        entityId = _caphhh_positional(args, kwargs, 0, 'entityId')
+        shotDispMultiplierFactor = _caphhh_positional(args, kwargs, 5, 'shotDispMultiplierFactor')
+        aimingTime = _caphhh_positional(args, kwargs, 10, 'aimingTime')
         if entityId != getattr(self, 'playerVehicleID', None):
             return result
         di = _caphhh_get_dispersion_info(self)
@@ -1623,8 +1616,8 @@ def hook_update_targeting_info(
     return result
 
 
-def hook_on_become_player(original, self):
-    result = original(self)
+def hook_on_become_player(original, self, *args, **kwargs):
+    result = original(self, *args, **kwargs)
     try:
         _reset_aiming_runtime()
         reset_floor_tracker()
@@ -1635,27 +1628,60 @@ def hook_on_become_player(original, self):
     return result
 
 
-def hook_on_become_non_player(original, self):
+def hook_on_become_non_player(original, self, *args, **kwargs):
     try:
         _clear_own_vehicle_hud()
     except Exception:
         LOG_CURRENT_EXCEPTION()
-    return original(self)
+    return original(self, *args, **kwargs)
 
 
-def hook_destroy(original, self):
+def hook_destroy(original, self, *args, **kwargs):
     try:
         player = _try_get_player()
         if self is player:
             _clear_own_vehicle_hud()
     except Exception:
         LOG_CURRENT_EXCEPTION()
-    return original(self)
+    return original(self, *args, **kwargs)
 
 
-def hook_avatar_handle_mouse_event(original, self, dx, dy, dz):
-    result = original(self, dx, dy, dz)
+def _caphhh_mouse_deltas(args, kwargs):
+    """
+    Mouse deltas from an AvatarInputHandler.handleMouseEvent call.
+
+    Client <= 2.3.1: handleMouseEvent(self, dx, dy, dz)
+    Client >= 2.4.0: handleMouseEvent(self, event), deltas on event.dx/.dy/.dz
+                     (wot-src sources/res/scripts/client/AvatarInputHandler/__init__.py:387)
+    """
+    if len(args) >= 3:
+        raw = args[0], args[1], args[2]
+    elif args or 'event' in kwargs:
+        event = args[0] if args else kwargs['event']
+        raw = (
+            getattr(event, 'dx', None),
+            getattr(event, 'dy', None),
+            getattr(event, 'dz', None),
+        )
+    else:
+        raw = kwargs.get('dx'), kwargs.get('dy'), kwargs.get('dz')
+
+    if raw[0] is None and raw[1] is None and raw[2] is None:
+        return None
     try:
+        return tuple(0.0 if value is None else float(value) for value in raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def hook_avatar_handle_mouse_event(original, self, *args, **kwargs):
+    result = original(self, *args, **kwargs)
+    try:
+        deltas = _caphhh_mouse_deltas(args, kwargs)
+        if deltas is None:
+            _drag_debug_log('handleMouseEvent unknown signature args=%r kwargs=%r' % (args, kwargs))
+            return result
+        dx, dy, dz = deltas
         _drag_debug_log('handleMouseEvent dx=%.3f dy=%.3f dz=%.3f dragging=%r ctrl=%r lmb=%r' % (
             dx, dy, dz, _HUD_DRAG._dragging, _HUD_DRAG._is_ctrl_pressed(), _HUD_DRAG._is_left_pressed()
         ))

@@ -52,6 +52,12 @@ python build.py --distribute
 
 ## 更新记录
 
+### 1.1.5
+
+- 修复 WoT `2.4.0.0` 兼容性：客户端把 `AvatarInputHandler.handleMouseEvent(dx, dy, dz)` 改成了 `handleMouseEvent(event)`，导致本 mod 的钩子在转发调用前就抛出异常，进入战斗后鼠标无法控制车辆和镜头。
+- 所有钩子改用 `*args`/`**kwargs` 转发客户端调用，今后签名再变只会影响 HUD，不会让客户端功能失效。
+- 将目标游戏版本更新为 WoT `2.4.0.0`。
+
 ### 1.1.4
 
 - 玩家坦克被摧毁或乘员失效时，立即隐藏并清理 HUD。

@@ -50,6 +50,12 @@ Fresh installs start centered on screen (`0.0`, `0.0`). Position is adjusted by 
 
 ## Changelog
 
+### 1.1.5
+
+- Fix WoT `2.4.0.0` compatibility: the client changed `AvatarInputHandler.handleMouseEvent(dx, dy, dz)` into `handleMouseEvent(event)`, which made the mod's hook raise before forwarding the call and left the mouse unable to steer the vehicle or camera in battle.
+- Forward every hooked client call with `*args`/`**kwargs` so a future signature change degrades the HUD instead of breaking the client.
+- Update the target game version to WoT `2.4.0.0`.
+
 ### 1.1.4
 
 - Hide and tear down the HUD immediately when the player's vehicle is destroyed or crew is deactivated.

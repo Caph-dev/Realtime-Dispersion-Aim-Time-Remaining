@@ -88,6 +88,16 @@ class _FakeAvatar(object):
         self.isVehicleAlive = alive
 
 
+class _FakeGun(object):
+    def __init__(self, shot_dispersion_angle):
+        self.shotDispersionAngle = shot_dispersion_angle
+
+
+class _FakeVehicleDescriptor(object):
+    def __init__(self, shot_dispersion_angle):
+        self.gun = _FakeGun(shot_dispersion_angle)
+
+
 class PositionPersistenceTests(unittest.TestCase):
     def test_default_offsets_start_centered(self):
         module, temp_dir = load_mod_module()
@@ -235,6 +245,85 @@ class DestroyedVehicleHudTests(unittest.TestCase):
         self.assertEqual(result, (0.12, 0.12))
         self.assertEqual(renderer.update_calls, [])
         self.assertEqual(renderer.destroy_calls, 1)
+
+
+class _FakeMouseEvent(object):
+    def __init__(self, dx, dy, dz):
+        self.dx = dx
+        self.dy = dy
+        self.dz = dz
+
+
+class MouseEventSignatureTests(unittest.TestCase):
+    """The client must keep receiving mouse deltas on both the <=2.3 and >=2.4 signatures."""
+
+    def setUp(self):
+        self.module, temp_dir = load_mod_module()
+        self.addCleanup(temp_dir.cleanup)
+        self.deltas = []
+        self.module._HUD_DRAG.on_mouse_delta = lambda dx, dy: self.deltas.append((dx, dy))
+
+    def test_legacy_delta_signature_forwards_to_client(self):
+        forwarded = []
+
+        def original(_self, dx, dy, dz):
+            forwarded.append((dx, dy, dz))
+            return 'handled'
+
+        result = self.module.hook_avatar_handle_mouse_event(original, object(), 3, -4, 0)
+
+        self.assertEqual(result, 'handled')
+        self.assertEqual(forwarded, [(3, -4, 0)])
+        self.assertEqual(self.deltas, [(3.0, -4.0)])
+
+    def test_event_object_signature_forwards_to_client(self):
+        event = _FakeMouseEvent(5, 6, 1)
+        forwarded = []
+
+        def original(_self, mouse_event):
+            forwarded.append(mouse_event)
+            return 'handled'
+
+        result = self.module.hook_avatar_handle_mouse_event(original, object(), event)
+
+        self.assertEqual(result, 'handled')
+        self.assertEqual(forwarded, [event])
+        self.assertEqual(self.deltas, [(5.0, 6.0)])
+
+    def test_unknown_signature_still_forwards_to_client(self):
+        forwarded = []
+
+        def original(_self, *args):
+            forwarded.append(args)
+            return 'handled'
+
+        result = self.module.hook_avatar_handle_mouse_event(original, object(), object())
+
+        self.assertEqual(result, 'handled')
+        self.assertEqual(len(forwarded), 1)
+        self.assertEqual(self.deltas, [])
+
+
+class TargetingInfoSignatureTests(unittest.TestCase):
+    def test_targeting_info_forwards_all_arguments(self):
+        module, temp_dir = load_mod_module()
+        self.addCleanup(temp_dir.cleanup)
+
+        avatar = _FakeAvatar(vehicle_id=7)
+        avatar.vehicleTypeDescriptor = _FakeVehicleDescriptor(shot_dispersion_angle=0.1)
+        module.BigWorld = _FakeBigWorld(avatar)
+        forwarded = []
+
+        def original(_self, *args):
+            forwarded.append(args)
+            return 'handled'
+
+        args = (7, 0.1, 0.2, 0.3, 0.4, 1.5, 0.6, 0.7, 0.8, 0.9, 2.5)
+        result = module.hook_update_targeting_info(original, avatar, *args)
+
+        self.assertEqual(result, 'handled')
+        self.assertEqual(forwarded, [args])
+        self.assertEqual(module.AIMING_RUNTIME['aiming_time'], 2.5)
 
 
 if __name__ == '__main__':
