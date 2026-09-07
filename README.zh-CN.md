@@ -2,7 +2,7 @@
 
 **英文文档:** [README.md](README.md)
 
-**GitHub 链接:** [github.com/Walaxy/WOT-Current-Accuracy-Aim-Time](https://github.com/Walaxy/WOT-Current-Accuracy-Aim-Time)
+**GitHub 链接:** [github.com/Caph-dev/Realtime-Dispersion-Aim-Time-Remaining](https://github.com/Caph-dev/Realtime-Dispersion-Aim-Time-Remaining)
 
 **WGMODS 链接:** [wgmods.net/7612/](https://wgmods.net/7612/)
 

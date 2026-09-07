@@ -16,7 +16,7 @@ if (Test-Path (Join-Path $GhDir "gh.exe")) {
 $RepoRoot = Split-Path $PSScriptRoot
 Set-Location $RepoRoot
 
-$Repo = "Walaxy/WOT-Realtime-Dispersion-Aim-Time-Remaining"
+$Repo = "Caph-dev/Realtime-Dispersion-Aim-Time-Remaining"
 
 function Remove-StandaloneWotmodReleaseAssets {
     param([string]$TagName, [string]$RepoName)
