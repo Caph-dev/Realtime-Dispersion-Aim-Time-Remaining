@@ -8,7 +8,7 @@
 
 A World of Tanks client mod that shows **realtime gun dispersion** and **aim time remaining** (seconds) near the crosshair. Optional **ModSettingsAPI** integration.
 
-![Dispersion and remaining aim time shown next to the crosshair in battle](assets/cover%20final.png)
+![Dispersion and remaining aim time shown next to the crosshair in battle](assets/cover_v2.png)
 
 ---
 
