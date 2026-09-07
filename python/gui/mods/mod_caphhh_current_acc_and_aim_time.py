@@ -414,6 +414,7 @@ except NameError:
 SETTINGS = copy.deepcopy(DEFAULT_SETTINGS)
 SETTINGS_TEMPLATE = None
 HOOKS_INSTALLED = False
+MOD_INITIALIZED = False
 
 
 def log(message):
@@ -1966,45 +1967,37 @@ def register_mod_settings():
         LOG_CURRENT_EXCEPTION()
 
 
-def register_mods_list():
-    metadata = {
-        'id': MOD_ID,
-        'name': MOD_NAME,
-        'description': 'Shows realtime dispersion and aim time remaining near the crosshair.',
-        'version': MOD_VERSION,
-    }
-    candidates = (
-        ('gui.modsListApi', 'g_modsListApi'),
-        ('gui.modsListApi', 'g_modsListAPI'),
-        ('gui.modsListApi.api', 'g_modsListApi'),
-        ('gui.mods.mod_mods_gui', 'g_modsListApi'),
-    )
-    for module_name, attribute_name in candidates:
-        try:
-            module = __import__(module_name, globals(), locals(), [attribute_name], 0)
-            api = getattr(module, attribute_name, None)
-        except Exception:
-            api = None
-        if api is None:
-            continue
+def show_mod_settings_window():
+    try:
+        from helpers import dependency
+        from gui.modsSettingsApi.skeleton import IModsSettingsApiInternal
+        from gui.modsSettingsApi.view import loadView
+        loadView(dependency.instance(IModsSettingsApiInternal))
+    except Exception:
+        LOG_CURRENT_EXCEPTION()
 
-        for method_name in ('addModification', 'addMod', 'registerMod', 'appendMod'):
-            method = getattr(api, method_name, None)
-            if not callable(method):
-                continue
-            try:
-                method(metadata)
-                log('ModsListAPI registered via %s.%s' % (module_name, method_name))
-                return
-            except TypeError:
-                try:
-                    method(MOD_ID, MOD_NAME, metadata['description'])
-                    log('ModsListAPI registered via %s.%s' % (module_name, method_name))
-                    return
-                except Exception:
-                    continue
-            except Exception:
-                continue
+
+def register_mods_list():
+    try:
+        from gui.modsListApi import g_modsListApi
+    except ImportError:
+        return
+
+    try:
+        g_modsListApi.addModification(
+            id=MOD_ID,
+            name=MOD_NAME,
+            description='Shows realtime dispersion and aim time remaining near the crosshair.',
+            icon='',
+            enabled=True,
+            login=False,
+            lobby=True,
+            callback=show_mod_settings_window,
+        )
+    except Exception:
+        LOG_CURRENT_EXCEPTION()
+        return
+    log('ModsListAPI registered.')
 
 
 def install_hooks():
@@ -2024,6 +2017,13 @@ def install_hooks():
 
 
 def init():
+    # The game imports this module and then calls init(), so the module level
+    # init() call below would otherwise run the whole setup twice.
+    global MOD_INITIALIZED
+    if MOD_INITIALIZED:
+        return
+    MOD_INITIALIZED = True
+
     load_config()
     install_hooks()
     _HUD_DRAG.install()
@@ -2034,6 +2034,11 @@ def init():
 
 
 def fini():
+    global MOD_INITIALIZED
+    if not MOD_INITIALIZED:
+        return
+    MOD_INITIALIZED = False
+
     try:
         _HUD_DRAG.uninstall()
         _reset_aiming_runtime()
