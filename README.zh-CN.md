@@ -10,6 +10,8 @@
 
 《坦克世界》客户端模组，在准星附近显示**实时火炮散布**与**剩余缩圈时间（秒）**。可选 **ModSettingsAPI**。
 
+![战斗中准星旁显示的散布与剩余缩圈时间](assets/cover%20final.png)
+
 ---
 
 ## 使用方法
@@ -37,6 +39,10 @@ python build.py --distribute
 配置文件路径：**`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**
 
 全新安装默认在屏幕正中（`0.0`，`0.0`）。战斗中可拖动 HUD 调整位置并保存；ModSettings 不再提供位置相关选项。
+
+下表中的每一项也可以在游戏内通过 **ModSettingsAPI** 直接修改：
+
+![模组的 ModSettingsAPI 设置面板](assets/interface%201.png)
 
 | 键 | 类型 | 说明 |
 |----|------|------|

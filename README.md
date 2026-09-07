@@ -8,6 +8,8 @@
 
 A World of Tanks client mod that shows **realtime gun dispersion** and **aim time remaining** (seconds) near the crosshair. Optional **ModSettingsAPI** integration.
 
+![Dispersion and remaining aim time shown next to the crosshair in battle](assets/cover%20final.png)
+
 ---
 
 ## Usage
@@ -35,6 +37,10 @@ Artifacts land in **`release/`** (`.wotmod` and, with `--distribute`, the releas
 File path: **`mods/configs/RealtimeDispersion&AimTimeRemaining/config.json`**
 
 Fresh installs start centered on screen (`0.0`, `0.0`). Position is adjusted by dragging the HUD in battle and saved to this file; ModSettings no longer exposes position controls.
+
+Every key below is also editable in-game through **ModSettingsAPI**:
+
+![The mod's ModSettingsAPI panel with all available options](assets/interface%201.png)
 
 | Key | Type | Description |
 |-----|------|-------------|
